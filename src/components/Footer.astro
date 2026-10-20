@@ -1,0 +1,323 @@
+---
+import { SITE } from '../config';
+
+const year = new Date().getFullYear();
+---
+
+<footer class="site-footer">
+  <div class="container">
+    <div class="footer-card">
+      <div class="footer-orbit" aria-hidden="true"></div>
+      <div class="footer-main">
+        <div class="footer-copy">
+          <p class="footer-eyebrow">LET'S KEEP IN TOUCH</p>
+          <h2>
+            下次见，
+            <br />
+            <em>继续写。</em>
+          </h2>
+          <p class="footer-intro">
+            如果你也在搭自己的小系统，或者只是想聊聊某个想法，欢迎来 GitHub 打个招呼。
+          </p>
+          <a class="footer-button" href={SITE.github} target="_blank" rel="noreferrer">
+            <span>去 GitHub 找我</span>
+            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path
+                d="M7 17 17 7M8 7h9v9"
+                stroke="currentColor"
+                stroke-width="1.8"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              ></path>
+            </svg>
+          </a>
+        </div>
+
+        <nav class="footer-nav" aria-label="页脚导航">
+          <p class="footer-nav__label">EXPLORE</p>
+          {SITE.nav.map((item) => (
+            <a href={item.href}>
+              {item.label}
+              <span aria-hidden="true">↗</span>
+            </a>
+          ))}
+          <a href="/rss.xml">
+            RSS
+            <span aria-hidden="true">↗</span>
+          </a>
+        </nav>
+      </div>
+
+      <div class="footer-bottom">
+        <p>
+          © {year} {SITE.name}. 慢慢写，认真想。
+        </p>
+        <p class="footer-built">
+          Built with{' '}
+          <a href="https://astro.build" target="_blank" rel="noreferrer">
+            Astro
+          </a>
+          <span aria-hidden="true">·</span>
+          Hosted on{' '}
+          <a href="https://pages.github.com" target="_blank" rel="noreferrer">
+            GitHub Pages
+          </a>
+        </p>
+        <a class="footer-top" href="#top">
+          回到顶部 ↑
+        </a>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<style>
+  .site-footer {
+    padding-block: clamp(64px, 9vw, 120px) 28px;
+  }
+
+  .footer-card {
+    position: relative;
+    padding: clamp(1.6rem, 4.5vw, 3.2rem);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: clamp(24px, 4vw, 38px);
+    background: #1e2922;
+    box-shadow: var(--shadow-lg);
+    color: #f7f2e6;
+    overflow: hidden;
+  }
+
+  .footer-orbit {
+    position: absolute;
+    top: -12rem;
+    right: -7rem;
+    width: clamp(21rem, 38vw, 36rem);
+    height: clamp(21rem, 38vw, 36rem);
+    border: 1px solid rgba(247, 242, 230, 0.11);
+    border-radius: 50%;
+    pointer-events: none;
+  }
+
+  .footer-orbit::before,
+  .footer-orbit::after {
+    position: absolute;
+    border: 1px solid rgba(247, 242, 230, 0.09);
+    border-radius: 50%;
+    content: '';
+  }
+
+  .footer-orbit::before {
+    inset: 2.8rem;
+  }
+
+  .footer-orbit::after {
+    inset: 6.2rem;
+    background: radial-gradient(circle at 40% 35%, #f6c26c, #e45f3d 60%, transparent 61%);
+    border: 0;
+    box-shadow: 0 0 100px rgba(228, 95, 61, 0.25);
+    opacity: 0.92;
+  }
+
+  .footer-main {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    grid-template-columns: minmax(0, 1.3fr) minmax(150px, 0.35fr);
+    gap: 3rem;
+    align-items: end;
+  }
+
+  .footer-eyebrow {
+    color: rgba(247, 242, 230, 0.68);
+    font-size: 0.68rem;
+    font-weight: 750;
+    letter-spacing: 0.18em;
+  }
+
+  .footer-copy h2 {
+    max-width: 10ch;
+    margin-top: 1rem;
+    color: #f7f2e6;
+    font-family: var(--font-display);
+    font-size: clamp(3.1rem, 8vw, 6.4rem);
+    font-weight: 500;
+    line-height: 0.94;
+    letter-spacing: -0.06em;
+  }
+
+  .footer-copy h2 em {
+    color: #f1bf77;
+    font-style: italic;
+    font-variation-settings:
+      'SOFT' 80,
+      'WONK' 1;
+  }
+
+  .footer-intro {
+    max-width: 42ch;
+    margin-top: 1.4rem;
+    color: rgba(247, 242, 230, 0.74);
+    font-size: 0.88rem;
+    line-height: 1.8;
+  }
+
+  .footer-button {
+    display: inline-flex;
+    gap: 0.55rem;
+    min-height: 46px;
+    align-items: center;
+    padding: 0.7rem 1.1rem;
+    border: 1px solid rgba(247, 242, 230, 0.28);
+    border-radius: 999px;
+    margin-top: 1.6rem;
+    color: #f7f2e6;
+    font-size: 0.82rem;
+    font-weight: 700;
+    text-decoration: none;
+    transition:
+      background-color 180ms ease,
+      border-color 180ms ease,
+      color 180ms ease,
+      transform 180ms var(--ease-out);
+  }
+
+  .footer-button svg {
+    width: 1rem;
+    height: 1rem;
+    transition: transform 180ms var(--ease-out);
+  }
+
+  .footer-button:hover {
+    border-color: #f1bf77;
+    background: #f1bf77;
+    color: #1e2922;
+    transform: translateY(-2px);
+  }
+
+  .footer-button:hover svg {
+    transform: translate(2px, -2px);
+  }
+
+  .footer-nav {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    gap: 0.75rem;
+    padding: 1rem;
+    border: 1px solid rgba(247, 242, 230, 0.15);
+    border-radius: 18px;
+    background: rgba(24, 33, 27, 0.72);
+    backdrop-filter: blur(12px);
+  }
+
+  .footer-nav__label {
+    margin-bottom: 0.35rem;
+    color: rgba(247, 242, 230, 0.6);
+    font-size: 0.64rem;
+    font-weight: 750;
+    letter-spacing: 0.18em;
+  }
+
+  .footer-nav a {
+    display: flex;
+    gap: 0.55rem;
+    align-items: center;
+    justify-content: space-between;
+    padding-bottom: 0.65rem;
+    border-bottom: 1px solid rgba(247, 242, 230, 0.12);
+    color: rgba(247, 242, 230, 0.86);
+    font-size: 0.82rem;
+    font-weight: 600;
+    text-decoration: none;
+    transition: color 160ms ease;
+  }
+
+  .footer-nav a span {
+    color: rgba(247, 242, 230, 0.5);
+    transition: transform 160ms var(--ease-out);
+  }
+
+  .footer-nav a:hover {
+    color: #f1bf77;
+  }
+
+  .footer-nav a:hover span {
+    transform: translate(2px, -2px);
+  }
+
+  .footer-bottom {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.9rem 1.5rem;
+    align-items: center;
+    justify-content: space-between;
+    padding-top: 2.4rem;
+    margin-top: clamp(2.5rem, 5vw, 4rem);
+    border-top: 1px solid rgba(247, 242, 230, 0.12);
+    color: rgba(247, 242, 230, 0.62);
+    font-size: 0.7rem;
+    line-height: 1.6;
+  }
+
+  .footer-built a {
+    color: rgba(247, 242, 230, 0.78);
+    text-decoration-color: rgba(247, 242, 230, 0.35);
+    text-underline-offset: 0.18em;
+  }
+
+  .footer-built a:hover {
+    color: #f1bf77;
+  }
+
+  .footer-built span {
+    margin-inline: 0.3rem;
+  }
+
+  .footer-top {
+    color: rgba(247, 242, 230, 0.75);
+    font-weight: 650;
+    text-decoration: none;
+  }
+
+  .footer-top:hover {
+    color: #f1bf77;
+  }
+
+  @media (max-width: 760px) {
+    .footer-main {
+      grid-template-columns: 1fr;
+      gap: 2.2rem;
+    }
+
+    .footer-nav {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 0.6rem 1.4rem;
+    }
+
+    .footer-nav__label {
+      grid-column: 1 / -1;
+    }
+
+    .footer-copy h2 {
+      font-size: clamp(3.4rem, 17vw, 5.5rem);
+    }
+  }
+
+  @media (max-width: 480px) {
+    .footer-card {
+      padding: 1.5rem 1.25rem;
+    }
+
+    .footer-bottom {
+      align-items: flex-start;
+      flex-direction: column;
+      gap: 0.6rem;
+    }
+
+    .footer-top {
+      margin-top: 0.2rem;
+    }
+  }
+</style>

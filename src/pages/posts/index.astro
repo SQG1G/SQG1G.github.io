@@ -1,0 +1,131 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import PageHeader from '../../components/PageHeader.astro';
+import PostCard from '../../components/PostCard.astro';
+import { getPosts, getTagSummaries } from '../../lib/content';
+
+const [posts, tags] = await Promise.all([getPosts(), getTagSummaries()]);
+---
+
+<BaseLayout title="文章" description="较长的思考：代码、系统设计、工具与学习方法。">
+  <PageHeader
+    eyebrow="ESSAYS &amp; WRITING"
+    title="认真写下的"
+    titleAccent="长文字"
+    titleTail="。"
+    description="完整的思考需要一点时间。这里放较长的文章，关于代码、系统，也关于如何把一件事想明白。"
+    issue="01"
+    countLabel={`${posts.length} 篇文章`}
+  />
+
+  <section class="container archive" aria-label="文章列表">
+    {tags.length > 0 && (
+      <div class="archive-filter">
+        <span class="archive-filter__label">TOPICS</span>
+        <ul class="tag-list">
+          {tags.slice(0, 8).map((tag) => (
+            <li>
+              <a class="tag" href={tag.href}>
+                {tag.name} <span class="tag-count">{tag.count}</span>
+              </a>
+            </li>
+          ))}
+        </ul>
+        <a class="archive-filter__all" href="/tags/">
+          全部标签 ↗
+        </a>
+      </div>
+    )}
+
+    {posts.length > 0 ? (
+      <div class="archive-grid">
+        {posts.map((post, index) => (
+          <PostCard entry={post} index={index} />
+        ))}
+      </div>
+    ) : (
+      <div class="archive-empty">
+        <p>还没有文章。</p>
+        <span>从一则短笔记开始，也可以。</span>
+      </div>
+    )}
+  </section>
+</BaseLayout>
+
+<style>
+  .archive {
+    padding-bottom: clamp(3rem, 7vw, 6rem);
+  }
+
+  .archive-filter {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.8rem 1rem;
+    align-items: center;
+    padding-block: 1rem;
+    border-top: 1px solid var(--line);
+    border-bottom: 1px solid var(--line);
+    margin-bottom: clamp(1.8rem, 4vw, 2.8rem);
+  }
+
+  .archive-filter__label {
+    margin-right: 0.25rem;
+    color: var(--muted);
+    font-family: var(--font-mono);
+    font-size: 0.61rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+  }
+
+  .archive-filter .tag-count {
+    margin-left: 0.12rem;
+    color: var(--muted);
+    font-size: 0.62rem;
+  }
+
+  .archive-filter__all {
+    margin-left: auto;
+    color: var(--muted);
+    font-size: 0.7rem;
+    font-weight: 650;
+    text-decoration: none;
+  }
+
+  .archive-filter__all:hover {
+    color: var(--accent);
+  }
+
+  .archive-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1rem;
+  }
+
+  .archive-empty {
+    display: grid;
+    gap: 0.35rem;
+    justify-items: center;
+    padding: 4rem 1rem;
+    border: 1px dashed var(--line-strong);
+    border-radius: var(--radius-md);
+    color: var(--muted);
+    font-size: 0.85rem;
+    text-align: center;
+  }
+
+  .archive-empty p {
+    color: var(--ink);
+    font-weight: 700;
+  }
+
+  @media (max-width: 760px) {
+    .archive-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .archive-filter__all {
+      width: 100%;
+      margin-left: 0;
+    }
+  }
+</style>

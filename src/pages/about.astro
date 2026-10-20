@@ -1,0 +1,446 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { SITE } from '../config';
+
+const nowItems = SITE.now.items;
+const principles = SITE.about.principles;
+---
+
+<BaseLayout title="关于" description={`关于 ${SITE.name} 和这个小小的数字花园。`}>
+  <section class="about-hero container page-enter">
+    <p class="eyebrow">ABOUT / COLOPHON</p>
+    <div class="about-hero__grid">
+      <h1>
+        你好，
+        <br />
+        我是 <span>SQG1G</span>。
+      </h1>
+      <div class="about-hero__side">
+        <p>{SITE.about.lead}</p>
+        <div class="about-hero__links">
+          <a href={SITE.github} target="_blank" rel="noreferrer">
+            GitHub ↗
+          </a>
+          <a href="/rss.xml">RSS ↗</a>
+          <a href={SITE.repo} target="_blank" rel="noreferrer">
+            站点源码 ↗
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="container about-body">
+    <div class="about-body__aside">
+      <span class="about-body__mark" aria-hidden="true">
+        “
+      </span>
+      <p>
+        把复杂的事，
+        <br />
+        尽量写清楚。
+      </p>
+      <span class="about-body__caption">— 这个小站的原则</span>
+    </div>
+    <div class="about-body__copy">
+      {SITE.about.paragraphs.map((paragraph) => (
+        <p>{paragraph}</p>
+      ))}
+    </div>
+  </section>
+
+  <section class="container about-principles" aria-labelledby="principles-heading">
+    <div class="section-heading">
+      <div class="section-heading__copy">
+        <p class="eyebrow">HOW I THINK</p>
+        <h2 id="principles-heading" class="section-title">
+          几条小小的原则<span class="title-dot">.</span>
+        </h2>
+      </div>
+      <p class="section-note">不是教条，只是写到卡住的时候，会拿出来看看的提醒。</p>
+    </div>
+
+    <div class="principles-grid">
+      {principles.map((principle, index) => (
+        <article class="principle-card">
+          <span class="principle-card__index">{String(index + 1).padStart(2, '0')}</span>
+          <h3>{principle.title}</h3>
+          <p>{principle.text}</p>
+        </article>
+      ))}
+    </div>
+  </section>
+
+  <section class="container about-now" aria-labelledby="now-heading">
+    <div class="about-now__copy">
+      <p class="eyebrow">NOW / LATELY</p>
+      <h2 id="now-heading">
+        最近在忙什么<span class="title-dot">.</span>
+      </h2>
+      <p>不追求高频更新，但希望每次回来，都能留下一点新的东西。</p>
+    </div>
+    <ul class="about-now__list">
+      {nowItems.map((item, index) => (
+        <li>
+          <span>{String(index + 1).padStart(2, '0')}</span>
+          {item}
+        </li>
+      ))}
+    </ul>
+  </section>
+
+  <section class="container colophon" aria-labelledby="colophon-heading">
+    <div class="colophon__main">
+      <p class="eyebrow">COLOPHON</p>
+      <h2 id="colophon-heading">
+        这个站点是怎么搭的<span class="title-dot">.</span>
+      </h2>
+      <p>
+        用{' '}
+        <a href="https://astro.build" target="_blank" rel="noreferrer">
+          Astro
+        </a>{' '}
+        构建的静态站点：内容写在 Markdown 里，推送代码后由 GitHub Actions 自动构建并发布到 GitHub
+        Pages。没有数据库，没有追踪脚本，也没有需要等待的加载动画。
+      </p>
+    </div>
+    <dl class="colophon__facts">
+      <div>
+        <dt>框架</dt>
+        <dd>Astro</dd>
+      </div>
+      <div>
+        <dt>内容</dt>
+        <dd>Markdown + Content Collections</dd>
+      </div>
+      <div>
+        <dt>字体</dt>
+        <dd>Manrope &amp; Fraunces</dd>
+      </div>
+      <div>
+        <dt>托管</dt>
+        <dd>GitHub Pages</dd>
+      </div>
+      <div>
+        <dt>更新方式</dt>
+        <dd>Git push → 自动部署</dd>
+      </div>
+      <div>
+        <dt>联系</dt>
+        <dd>
+          <a href={SITE.github} target="_blank" rel="noreferrer">
+            GitHub
+          </a>{' '}
+          / <a href="/rss.xml">RSS</a>
+        </dd>
+      </div>
+    </dl>
+  </section>
+</BaseLayout>
+
+<style>
+  .about-hero {
+    padding-block: clamp(2.5rem, 6vw, 5.5rem) clamp(2.8rem, 6vw, 5rem);
+  }
+
+  .about-hero__grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1.2fr) minmax(260px, 0.55fr);
+    gap: clamp(2.5rem, 6vw, 6rem);
+    align-items: end;
+    margin-top: 1.2rem;
+  }
+
+  .about-hero h1 {
+    max-width: 12ch;
+    font-size: clamp(3.4rem, 8vw, 7.4rem);
+    font-weight: 780;
+    line-height: 0.94;
+    letter-spacing: -0.075em;
+  }
+
+  .about-hero h1 span {
+    color: var(--accent);
+    font-family: var(--font-display);
+    font-style: italic;
+    font-weight: 500;
+    letter-spacing: -0.05em;
+  }
+
+  .about-hero__side {
+    display: grid;
+    gap: 1.5rem;
+    padding-bottom: 0.4rem;
+  }
+
+  .about-hero__side > p {
+    max-width: 34ch;
+    color: var(--ink-soft);
+    font-family: var(--font-display);
+    font-size: clamp(1.3rem, 2.2vw, 1.7rem);
+    line-height: 1.4;
+    letter-spacing: -0.03em;
+  }
+
+  .about-hero__links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.55rem 1rem;
+  }
+
+  .about-hero__links a {
+    color: var(--muted);
+    font-size: 0.72rem;
+    font-weight: 650;
+    text-decoration: none;
+  }
+
+  .about-hero__links a:hover {
+    color: var(--accent);
+  }
+
+  .about-body {
+    display: grid;
+    grid-template-columns: minmax(220px, 0.55fr) minmax(0, 0.9fr);
+    gap: clamp(2.5rem, 7vw, 8rem);
+    padding-block: clamp(2.5rem, 6vw, 5rem);
+    border-top: 1px solid var(--line);
+  }
+
+  .about-body__aside {
+    position: sticky;
+    top: 8rem;
+    align-self: start;
+  }
+
+  .about-body__mark {
+    display: block;
+    height: 1.3rem;
+    color: var(--accent);
+    font-family: var(--font-display);
+    font-size: 4.8rem;
+    line-height: 0.8;
+  }
+
+  .about-body__aside p {
+    font-family: var(--font-display);
+    font-size: clamp(1.8rem, 3.4vw, 2.8rem);
+    line-height: 1.25;
+    letter-spacing: -0.04em;
+  }
+
+  .about-body__caption {
+    display: block;
+    margin-top: 1.2rem;
+    color: var(--muted);
+    font-size: 0.7rem;
+    font-weight: 600;
+  }
+
+  .about-body__copy {
+    display: grid;
+    gap: 1.25rem;
+    max-width: 62ch;
+    color: var(--ink-soft);
+    font-size: clamp(0.98rem, 1.05vw, 1.08rem);
+    line-height: 1.95;
+  }
+
+  .about-principles {
+    padding-block: clamp(3rem, 7vw, 6rem);
+    border-top: 1px solid var(--line);
+  }
+
+  .principles-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1rem;
+  }
+
+  .principle-card {
+    position: relative;
+    min-height: 245px;
+    padding: 1.4rem;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-md);
+    background: color-mix(in srgb, var(--surface) 72%, transparent);
+    overflow: hidden;
+    transition:
+      border-color 180ms ease,
+      transform 220ms var(--ease-out);
+  }
+
+  .principle-card:hover {
+    border-color: var(--line-strong);
+    transform: translateY(-3px);
+  }
+
+  .principle-card__index {
+    color: var(--accent);
+    font-family: var(--font-display);
+    font-size: 1.15rem;
+    font-style: italic;
+  }
+
+  .principle-card h3 {
+    max-width: 13ch;
+    margin-top: 2.4rem;
+    font-size: clamp(1.2rem, 1.8vw, 1.45rem);
+    line-height: 1.28;
+  }
+
+  .principle-card p {
+    margin-top: 0.7rem;
+    color: var(--muted);
+    font-size: 0.8rem;
+    line-height: 1.75;
+  }
+
+  .about-now {
+    display: grid;
+    grid-template-columns: minmax(0, 0.65fr) minmax(280px, 0.75fr);
+    gap: clamp(2rem, 7vw, 7rem);
+    align-items: start;
+    padding-block: clamp(3rem, 7vw, 6rem);
+    border-top: 1px solid var(--line);
+  }
+
+  .about-now__copy h2 {
+    margin-top: 1rem;
+    font-size: clamp(2rem, 4.2vw, 3.4rem);
+  }
+
+  .about-now__copy > p:not(.eyebrow) {
+    max-width: 38ch;
+    margin-top: 1rem;
+    color: var(--muted);
+    font-size: 0.83rem;
+    line-height: 1.8;
+  }
+
+  .about-now__list {
+    border-top: 1px solid var(--line);
+    list-style: none;
+  }
+
+  .about-now__list li {
+    display: flex;
+    gap: 1rem;
+    align-items: baseline;
+    padding: 1rem 0.2rem;
+    border-bottom: 1px solid var(--line);
+    color: var(--ink-soft);
+    font-size: 0.87rem;
+    line-height: 1.65;
+  }
+
+  .about-now__list li span {
+    color: var(--accent);
+    font-family: var(--font-mono);
+    font-size: 0.63rem;
+  }
+
+  .colophon {
+    display: grid;
+    grid-template-columns: minmax(0, 0.8fr) minmax(300px, 0.7fr);
+    gap: clamp(2rem, 6vw, 6rem);
+    padding-block: clamp(3rem, 7vw, 6rem) clamp(4rem, 8vw, 7rem);
+    border-top: 1px solid var(--line);
+  }
+
+  .colophon h2 {
+    max-width: 13ch;
+    margin-top: 1rem;
+    font-size: clamp(2rem, 4vw, 3.2rem);
+  }
+
+  .colophon__main > p:not(.eyebrow) {
+    max-width: 50ch;
+    margin-top: 1rem;
+    color: var(--ink-soft);
+    font-size: 0.85rem;
+    line-height: 1.85;
+  }
+
+  .colophon__main a {
+    color: var(--ink);
+    text-decoration-color: var(--accent);
+    text-underline-offset: 0.2em;
+  }
+
+  .colophon__facts {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-md);
+    background: var(--line);
+    overflow: hidden;
+  }
+
+  .colophon__facts div {
+    padding: 0.9rem 1rem;
+    background: var(--surface);
+  }
+
+  .colophon__facts dt {
+    color: var(--muted);
+    font-family: var(--font-mono);
+    font-size: 0.57rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .colophon__facts dd {
+    margin-top: 0.3rem;
+    color: var(--ink-soft);
+    font-size: 0.73rem;
+    line-height: 1.5;
+  }
+
+  .colophon__facts a {
+    color: var(--ink);
+    text-decoration-color: var(--accent);
+    text-underline-offset: 0.16em;
+  }
+
+  @media (max-width: 900px) {
+    .about-hero__grid,
+    .about-body,
+    .about-now,
+    .colophon {
+      grid-template-columns: 1fr;
+      gap: 2rem;
+    }
+
+    .about-body__aside {
+      position: static;
+    }
+
+    .about-body__aside p {
+      font-size: clamp(1.8rem, 6vw, 2.4rem);
+    }
+
+    .principles-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .principle-card {
+      min-height: 0;
+    }
+
+    .principle-card h3 {
+      margin-top: 1.5rem;
+    }
+  }
+
+  @media (max-width: 560px) {
+    .about-hero h1 {
+      font-size: clamp(3rem, 16vw, 5rem);
+    }
+
+    .colophon__facts {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

@@ -1,0 +1,124 @@
+---
+import '@fontsource-variable/manrope';
+import '@fontsource-variable/fraunces';
+import '@fontsource-variable/fraunces/wght-italic.css';
+import '../styles/global.css';
+
+import Footer from '../components/Footer.astro';
+import Header from '../components/Header.astro';
+import SearchDialog from '../components/SearchDialog.astro';
+import { SITE } from '../config';
+
+interface Props {
+  title?: string;
+  description?: string;
+  image?: string;
+  type?: 'website' | 'article';
+  publishedTime?: Date;
+  updatedTime?: Date;
+  tags?: string[];
+  noindex?: boolean;
+}
+
+const {
+  title,
+  description = SITE.description,
+  image = SITE.ogImage,
+  type = 'website',
+  publishedTime,
+  updatedTime,
+  tags = [],
+  noindex = false,
+} = Astro.props;
+
+const siteUrl = Astro.site ?? new URL(SITE.url);
+const canonical = new URL(Astro.url.pathname, siteUrl);
+const pageTitle = title ? `${title} · ${SITE.name}` : SITE.title;
+const socialImage = new URL(image, siteUrl);
+
+const websiteSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'WebSite',
+  name: SITE.title,
+  url: siteUrl.href,
+  description: SITE.description,
+  inLanguage: SITE.locale,
+  author: {
+    '@type': 'Person',
+    name: SITE.author.name,
+    url: SITE.github,
+  },
+};
+---
+
+<!doctype html>
+<html lang={SITE.locale}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <script is:inline>
+      (() => {
+        try {
+          const stored = localStorage.getItem('theme');
+          const preferred = window.matchMedia('(prefers-color-scheme: dark)').matches;
+          const theme =
+            stored === 'light' || stored === 'dark' ? stored : preferred ? 'dark' : 'light';
+          document.documentElement.dataset.theme = theme;
+        } catch {
+          document.documentElement.dataset.theme = 'light';
+        }
+      })();
+    </script>
+    <title>{pageTitle}</title>
+    <meta name="description" content={description} />
+    <meta name="author" content={SITE.author.name} />
+    <meta name="generator" content={Astro.generator} />
+    {noindex && <meta name="robots" content="noindex, nofollow" />}
+    <link rel="canonical" href={canonical.href} />
+
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="manifest" href="/site.webmanifest" />
+    <link rel="alternate" type="application/rss+xml" title={`${SITE.name} · RSS`} href="/rss.xml" />
+    <meta name="theme-color" media="(prefers-color-scheme: light)" content="#f7f3e9" />
+    <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#111713" />
+
+    <meta property="og:type" content={type} />
+    <meta property="og:title" content={pageTitle} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical.href} />
+    <meta property="og:site_name" content={SITE.name} />
+    <meta property="og:locale" content="zh_CN" />
+    <meta property="og:image" content={socialImage.href} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content={`${SITE.name} · ${SITE.title}`} />
+    {publishedTime && (
+      <meta property="article:published_time" content={publishedTime.toISOString()} />
+    )}
+    {updatedTime && <meta property="article:modified_time" content={updatedTime.toISOString()} />}
+    {tags.map((tag) => (
+      <meta property="article:tag" content={tag} />
+    ))}
+
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={pageTitle} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={socialImage.href} />
+
+    <script type="application/ld+json" is:inline set:html={JSON.stringify(websiteSchema)} />
+    <slot name="head" />
+  </head>
+  <body id="top">
+    <a class="skip-link" href="#main">
+      跳到主要内容
+    </a>
+    <Header />
+    <main id="main" class="page-main">
+      <slot />
+    </main>
+    <Footer />
+    <SearchDialog />
+  </body>
+</html>

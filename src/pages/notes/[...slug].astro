@@ -1,0 +1,25 @@
+---
+import { render } from 'astro:content';
+import ArticleLayout from '../../layouts/ArticleLayout.astro';
+import { entrySlug, getNotes } from '../../lib/content';
+
+export async function getStaticPaths() {
+  const notes = await getNotes();
+
+  return notes.map((note, index) => ({
+    params: { slug: entrySlug(note) },
+    props: {
+      note,
+      previous: notes[index - 1],
+      next: notes[index + 1],
+    },
+  }));
+}
+
+const { note, previous, next } = Astro.props;
+const { Content, headings } = await render(note);
+---
+
+<ArticleLayout entry={note} headings={headings} previous={previous} next={next}>
+  <Content />
+</ArticleLayout>

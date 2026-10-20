@@ -1,0 +1,170 @@
+---
+import type { NoteEntry } from '../lib/content';
+import { NOTE_STATUS, formatDate, getReadingTime, noteHref } from '../lib/content';
+
+interface Props {
+  entry: NoteEntry;
+  index?: number;
+}
+
+const { entry, index = 0 } = Astro.props;
+const href = noteHref(entry);
+const readingTime = getReadingTime(entry.body);
+const status = NOTE_STATUS[entry.data.status];
+---
+
+<article
+  class={`note-card note-card--${entry.data.status}`}
+  style={`--card-delay: ${Math.min(index, 5) * 70}ms`}
+>
+  <a class="note-card__link" href={href} aria-label={`阅读笔记：${entry.data.title}`}>
+    <div class="note-card__head">
+      <span class="note-card__status">
+        <span class="note-card__dot" aria-hidden="true"></span>
+        {status.label}
+      </span>
+      <time datetime={entry.data.date.toISOString()}>{formatDate(entry.data.date)}</time>
+    </div>
+
+    <div class="note-card__body">
+      <h3>{entry.data.title}</h3>
+      <p>{entry.data.description}</p>
+    </div>
+
+    <div class="note-card__foot">
+      <span>{readingTime} 分钟</span>
+      <span class="note-card__arrow" aria-hidden="true">
+        ↗
+      </span>
+    </div>
+  </a>
+</article>
+
+<style>
+  .note-card {
+    position: relative;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-md);
+    background: color-mix(in srgb, var(--surface) 74%, transparent);
+    box-shadow: var(--shadow-sm);
+    animation: note-in 650ms var(--ease-out) both;
+    animation-delay: var(--card-delay, 0ms);
+    transition:
+      border-color 200ms ease,
+      box-shadow 200ms ease,
+      transform 220ms var(--ease-out);
+  }
+
+  .note-card:hover {
+    border-color: color-mix(in srgb, var(--moss) 55%, var(--line));
+    box-shadow: var(--shadow-md);
+    transform: translateY(-3px) rotate(-0.25deg);
+  }
+
+  .note-card__link {
+    display: flex;
+    height: 100%;
+    min-height: 245px;
+    flex-direction: column;
+    padding: 1.35rem;
+    color: var(--ink);
+    text-decoration: none;
+  }
+
+  .note-card__head {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    justify-content: space-between;
+    color: var(--muted);
+    font-size: 0.68rem;
+    font-weight: 600;
+  }
+
+  .note-card__status {
+    display: inline-flex;
+    gap: 0.35rem;
+    align-items: center;
+    color: var(--ink-soft);
+  }
+
+  .note-card__dot {
+    width: 0.46rem;
+    height: 0.46rem;
+    border-radius: 50%;
+    background: var(--gold);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--gold) 18%, transparent);
+  }
+
+  .note-card--growing .note-card__dot {
+    background: var(--moss);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--moss) 18%, transparent);
+  }
+
+  .note-card--evergreen .note-card__dot {
+    background: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-wash);
+  }
+
+  .note-card__body {
+    margin-block: auto;
+    padding-block: 2rem;
+  }
+
+  .note-card__body h3 {
+    max-width: 18ch;
+    font-size: clamp(1.2rem, 1.7vw, 1.5rem);
+    line-height: 1.28;
+    letter-spacing: -0.04em;
+  }
+
+  .note-card__body p {
+    margin-top: 0.55rem;
+    color: var(--muted);
+    font-size: 0.8rem;
+    line-height: 1.7;
+  }
+
+  .note-card__foot {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    color: var(--muted);
+    font-size: 0.66rem;
+    font-weight: 650;
+  }
+
+  .note-card__arrow {
+    display: grid;
+    width: 1.8rem;
+    height: 1.8rem;
+    border: 1px solid var(--line);
+    border-radius: 50%;
+    color: var(--muted);
+    font-size: 0.8rem;
+    place-items: center;
+    transition:
+      background-color 180ms ease,
+      border-color 180ms ease,
+      color 180ms ease,
+      transform 180ms var(--ease-out);
+  }
+
+  .note-card:hover .note-card__arrow {
+    border-color: var(--ink);
+    background: var(--ink);
+    color: var(--bg);
+    transform: rotate(8deg);
+  }
+
+  @keyframes note-in {
+    from {
+      opacity: 0;
+      transform: translateY(14px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+</style>

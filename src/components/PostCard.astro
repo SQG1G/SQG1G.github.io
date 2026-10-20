@@ -1,0 +1,250 @@
+---
+import type { PostEntry } from '../lib/content';
+import { formatDate, getReadingTime, postHref } from '../lib/content';
+
+interface Props {
+  entry: PostEntry;
+  index?: number;
+  featured?: boolean;
+}
+
+const { entry, index = 0, featured = false } = Astro.props;
+const href = postHref(entry);
+const readingTime = getReadingTime(entry.body);
+const visibleTags = entry.data.tags.slice(0, 3);
+const indexLabel = String(index + 1).padStart(2, '0');
+---
+
+<article
+  class:list={['post-card', { 'post-card--featured': featured }]}
+  style={`--card-delay: ${Math.min(index, 5) * 70}ms`}
+>
+  <a class="post-card__link" href={href} aria-label={`阅读文章：${entry.data.title}`}>
+    <div class="post-card__top">
+      <div class="meta-line">
+        <time datetime={entry.data.date.toISOString()}>{formatDate(entry.data.date)}</time>
+        <span class="meta-dot" aria-hidden="true"></span>
+        <span>{readingTime} 分钟阅读</span>
+      </div>
+      <span class="post-card__index" aria-hidden="true">
+        {indexLabel}
+      </span>
+    </div>
+
+    <div class="post-card__body">
+      <h3>{entry.data.title}</h3>
+      <p>{entry.data.description}</p>
+    </div>
+
+    <div class="post-card__footer">
+      <ul class="tag-list" aria-label="标签">
+        {visibleTags.map((tag) => (
+          <li>
+            <span class="tag">{tag}</span>
+          </li>
+        ))}
+      </ul>
+      <span class="post-card__cta" aria-hidden="true">
+        阅读
+        <svg viewBox="0 0 24 24" fill="none">
+          <path
+            d="M5 12h13M13 6l6 6-6 6"
+            stroke="currentColor"
+            stroke-width="1.8"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          ></path>
+        </svg>
+      </span>
+    </div>
+  </a>
+</article>
+
+<style>
+  .post-card {
+    position: relative;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-lg);
+    background: color-mix(in srgb, var(--surface) 78%, transparent);
+    box-shadow: var(--shadow-sm);
+    overflow: hidden;
+    animation: card-in 700ms var(--ease-out) both;
+    animation-delay: var(--card-delay, 0ms);
+    transition:
+      border-color 200ms ease,
+      box-shadow 200ms ease,
+      transform 240ms var(--ease-out);
+  }
+
+  .post-card::before {
+    position: absolute;
+    top: -30%;
+    right: -25%;
+    width: 12rem;
+    height: 12rem;
+    border-radius: 50%;
+    background: radial-gradient(circle, var(--accent-soft), transparent 68%);
+    content: '';
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 300ms ease;
+  }
+
+  .post-card:hover {
+    border-color: color-mix(in srgb, var(--accent) 35%, var(--line));
+    box-shadow: var(--shadow-md);
+    transform: translateY(-4px);
+  }
+
+  .post-card:hover::before {
+    opacity: 0.85;
+  }
+
+  .post-card__link {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    height: 100%;
+    flex-direction: column;
+    gap: 2.4rem;
+    justify-content: space-between;
+    padding: clamp(1.35rem, 2.6vw, 2rem);
+    color: var(--ink);
+    text-decoration: none;
+  }
+
+  .post-card__top {
+    display: flex;
+    gap: 1rem;
+    align-items: flex-start;
+    justify-content: space-between;
+  }
+
+  .post-card__index {
+    color: var(--line-strong);
+    font-family: var(--font-display);
+    font-size: 1.25rem;
+    font-style: italic;
+    line-height: 1;
+    transition: color 200ms ease;
+  }
+
+  .post-card:hover .post-card__index {
+    color: var(--accent);
+  }
+
+  .post-card__body h3 {
+    max-width: 100%;
+    font-size: clamp(1.4rem, 2vw, 1.8rem);
+    line-height: 1.22;
+    letter-spacing: -0.045em;
+    transition: color 180ms ease;
+  }
+
+  .post-card__body p {
+    max-width: 46ch;
+    margin-top: 0.7rem;
+    color: var(--muted);
+    font-size: 0.84rem;
+    line-height: 1.75;
+  }
+
+  .post-card__footer {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .post-card__footer .tag {
+    background: color-mix(in srgb, var(--bg) 70%, transparent);
+  }
+
+  .post-card__cta {
+    display: inline-flex;
+    gap: 0.35rem;
+    align-items: center;
+    color: var(--muted);
+    font-size: 0.72rem;
+    font-weight: 700;
+    white-space: nowrap;
+    transition: color 180ms ease;
+  }
+
+  .post-card__cta svg {
+    width: 0.95rem;
+    height: 0.95rem;
+    transition: transform 180ms var(--ease-out);
+  }
+
+  .post-card:hover .post-card__cta {
+    color: var(--accent);
+  }
+
+  .post-card:hover .post-card__cta svg {
+    transform: translateX(3px);
+  }
+
+  .post-card--featured {
+    background: linear-gradient(
+      145deg,
+      color-mix(in srgb, var(--accent-soft) 72%, var(--surface)),
+      var(--surface) 72%
+    );
+  }
+
+  .post-card--featured .post-card__link {
+    gap: clamp(3rem, 7vw, 5.6rem);
+    padding: clamp(1.5rem, 3.4vw, 2.8rem);
+  }
+
+  .post-card--featured .post-card__body h3 {
+    max-width: 100%;
+    font-family: var(--font-display);
+    font-size: clamp(2.2rem, 4.4vw, 3.7rem);
+    font-weight: 500;
+    line-height: 0.98;
+    letter-spacing: -0.055em;
+  }
+
+  .post-card--featured .post-card__body p {
+    max-width: 40ch;
+    color: var(--ink-soft);
+    font-size: 0.9rem;
+  }
+
+  .post-card--featured .post-card__index {
+    font-size: 2rem;
+    color: var(--accent);
+    opacity: 0.55;
+  }
+
+  @keyframes card-in {
+    from {
+      opacity: 0;
+      transform: translateY(16px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @media (max-width: 600px) {
+    .post-card__link {
+      gap: 2rem;
+    }
+
+    .post-card__footer {
+      align-items: flex-end;
+    }
+
+    .post-card__cta {
+      display: none;
+    }
+
+    .post-card--featured .post-card__body h3 {
+      font-size: clamp(2rem, 10vw, 2.7rem);
+    }
+  }
+</style>

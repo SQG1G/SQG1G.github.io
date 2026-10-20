@@ -1,0 +1,819 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import NoteCard from '../components/NoteCard.astro';
+import PostCard from '../components/PostCard.astro';
+import { SITE } from '../config';
+import { getNotes, getPosts, getTagSummaries } from '../lib/content';
+
+const [posts, notes, tags] = await Promise.all([getPosts(), getNotes(), getTagSummaries()]);
+const latestPosts = posts.slice(0, 3);
+const latestNotes = notes.slice(0, 3);
+---
+
+<BaseLayout description={SITE.description}>
+  <section class="hero">
+    <div class="container hero__grid">
+      <div class="hero__copy page-enter">
+        <p class="eyebrow">{SITE.hero.eyebrow}</p>
+        <h1>
+          <span class="hero__title-line">{SITE.hero.titleBefore}</span>
+          <em>{SITE.hero.titleEmphasis}</em>
+          {SITE.hero.titleAfter}
+        </h1>
+        <p class="hero__intro">{SITE.hero.intro}</p>
+
+        <div class="button-row hero__actions">
+          <a class="button button--primary" href="/posts/">
+            读最新文章
+            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path
+                d="M5 12h13M13 6l6 6-6 6"
+                stroke="currentColor"
+                stroke-width="1.8"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              ></path>
+            </svg>
+          </a>
+          <a class="button button--ghost" href="/notes/">
+            逛逛笔记
+            <span aria-hidden="true">↗</span>
+          </a>
+        </div>
+
+        <div class="hero__stats" aria-label="站点内容统计">
+          <span>
+            <strong>{String(posts.length).padStart(2, '0')}</strong> 篇文章
+          </span>
+          <span class="hero__stat-dot" aria-hidden="true"></span>
+          <span>
+            <strong>{String(notes.length).padStart(2, '0')}</strong> 则笔记
+          </span>
+          <span class="hero__stat-dot" aria-hidden="true"></span>
+          <span>
+            <strong>{String(tags.length).padStart(2, '0')}</strong> 个标签
+          </span>
+        </div>
+      </div>
+
+      <aside class="hero-art" aria-labelledby="now-title">
+        <div class="hero-art__grid" aria-hidden="true"></div>
+        <div class="hero-art__sun" aria-hidden="true"></div>
+        <div class="hero-art__ring" aria-hidden="true"></div>
+        <span class="hero-art__star hero-art__star--one" aria-hidden="true">
+          ✦
+        </span>
+        <span class="hero-art__star hero-art__star--two" aria-hidden="true">
+          ✳
+        </span>
+        <span class="hero-art__label">FIELD NOTES / SLOWLY GROWING</span>
+
+        <div class="now-card">
+          <div class="now-card__head">
+            <span>{SITE.now.label}</span>
+            <span class="now-card__line" aria-hidden="true"></span>
+            <span>{new Date().getFullYear()}</span>
+          </div>
+          <h2 id="now-title">{SITE.now.title}</h2>
+          <ul>
+            {SITE.now.items.map((item) => (
+              <li>{item}</li>
+            ))}
+          </ul>
+          <div class="now-card__foot">
+            <span>保持好奇</span>
+            <span class="now-card__spark" aria-hidden="true">
+              ✳
+            </span>
+          </div>
+        </div>
+      </aside>
+    </div>
+
+    <div class="container hero-ticker" aria-hidden="true">
+      <span>WEB ENGINEERING</span>
+      <span class="hero-ticker__star">✦</span>
+      <span>NOTES &amp; SYSTEMS</span>
+      <span class="hero-ticker__star">✦</span>
+      <span>DESIGN &amp; TOOLS</span>
+      <span class="hero-ticker__star">✦</span>
+      <span>CURIOUS BY DEFAULT</span>
+      <span class="hero-ticker__line"></span>
+      <span class="hero-ticker__scroll">SCROLL SLOW</span>
+    </div>
+  </section>
+
+  <section class="home-section container" aria-labelledby="latest-heading">
+    <div class="section-heading">
+      <div class="section-heading__copy">
+        <p class="eyebrow">RECENT WRITING</p>
+        <h2 id="latest-heading" class="section-title">
+          最近写下的<span class="title-dot">.</span>
+        </h2>
+        <p class="section-note">一些完整的思考，通常关于代码，也偶尔关于生活。</p>
+      </div>
+      <a class="section-link" href="/posts/">
+        全部文章
+        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path
+            d="M5 12h13M13 6l6 6-6 6"
+            stroke="currentColor"
+            stroke-width="1.8"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          ></path>
+        </svg>
+      </a>
+    </div>
+
+    {latestPosts.length > 0 ? (
+      <div class="latest-grid">
+        {latestPosts.map((post, index) => (
+          <PostCard entry={post} index={index} featured={index === 0} />
+        ))}
+      </div>
+    ) : (
+      <p class="empty-note">第一篇文章正在路上。</p>
+    )}
+  </section>
+
+  <section class="home-section notes-section" aria-labelledby="notes-heading">
+    <div class="container">
+      <div class="section-heading">
+        <div class="section-heading__copy">
+          <p class="eyebrow">THE GARDEN</p>
+          <h2 id="notes-heading" class="section-title">
+            知识花园<span class="title-dot">.</span>
+          </h2>
+          <p class="section-note">没有完成时。短一点、轻一点，先记下来，再慢慢养大。</p>
+        </div>
+        <a class="section-link" href="/notes/">
+          所有笔记
+          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path
+              d="M5 12h13M13 6l6 6-6 6"
+              stroke="currentColor"
+              stroke-width="1.8"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            ></path>
+          </svg>
+        </a>
+      </div>
+
+      {latestNotes.length > 0 ? (
+        <div class="notes-grid">
+          {latestNotes.map((note, index) => (
+            <NoteCard entry={note} index={index} />
+          ))}
+        </div>
+      ) : (
+        <p class="empty-note">笔记还在发芽。</p>
+      )}
+    </div>
+  </section>
+
+  <section class="home-section container" aria-labelledby="about-heading">
+    <div class="about-panel">
+      <div class="about-panel__copy">
+        <p class="eyebrow">ABOUT THIS GARDEN</p>
+        <h2 id="about-heading">一个用来认真想事情的地方。</h2>
+        <p>{SITE.about.paragraphs[0]}</p>
+        <a class="button button--primary" href="/about/">
+          认识一下
+          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path
+              d="M5 12h13M13 6l6 6-6 6"
+              stroke="currentColor"
+              stroke-width="1.8"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            ></path>
+          </svg>
+        </a>
+      </div>
+      <blockquote class="about-panel__quote">
+        <span class="about-panel__mark" aria-hidden="true">
+          “
+        </span>
+        <p>{SITE.about.lead}</p>
+        <footer>— {SITE.author.name}</footer>
+      </blockquote>
+      <div class="about-panel__orbit" aria-hidden="true"></div>
+      <span class="about-panel__asterisk" aria-hidden="true">
+        ✳
+      </span>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .hero {
+    padding-block: clamp(2rem, 4vw, 4rem) 0;
+  }
+
+  .hero__grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1.24fr) minmax(330px, 0.66fr);
+    gap: clamp(2.4rem, 6vw, 6.2rem);
+    align-items: center;
+    padding-block: clamp(1.5rem, 4vw, 3rem) clamp(2.8rem, 6vw, 5rem);
+  }
+
+  .hero__grid > * {
+    min-width: 0;
+  }
+
+  .hero__copy h1 {
+    max-width: 100%;
+    margin-top: 1.25rem;
+    font-size: clamp(3.4rem, 7.6vw, 7.2rem);
+    font-weight: 780;
+    line-height: 0.92;
+    letter-spacing: -0.085em;
+  }
+
+  .hero__title-line {
+    display: block;
+    white-space: nowrap;
+  }
+
+  .hero__copy h1 em {
+    position: relative;
+    display: inline-block;
+    color: var(--accent);
+    font-family: var(--font-display);
+    font-style: italic;
+    font-weight: 500;
+    letter-spacing: -0.055em;
+    transform: rotate(-1.5deg) translateY(0.03em);
+  }
+
+  .hero__copy h1 em::after {
+    position: absolute;
+    right: 0;
+    bottom: -0.04em;
+    left: 0.03em;
+    height: 0.11em;
+    border-bottom: 0.09em solid color-mix(in srgb, var(--gold) 70%, transparent);
+    border-radius: 50%;
+    content: '';
+    transform: rotate(-1deg);
+  }
+
+  .hero__intro {
+    max-width: 46ch;
+    margin-top: 1.8rem;
+    color: var(--ink-soft);
+    font-size: clamp(0.96rem, 1.1vw, 1.05rem);
+    line-height: 1.9;
+  }
+
+  .hero__actions {
+    margin-top: 2rem;
+  }
+
+  .hero__stats {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.55rem;
+    align-items: center;
+    margin-top: 2.7rem;
+    color: var(--muted);
+    font-size: 0.71rem;
+    font-weight: 600;
+  }
+
+  .hero__stats strong {
+    margin-right: 0.16rem;
+    color: var(--ink);
+    font-family: var(--font-mono);
+    font-size: 0.76rem;
+    font-weight: 650;
+  }
+
+  .hero__stat-dot {
+    width: 3px;
+    height: 3px;
+    border-radius: 50%;
+    background: var(--line-strong);
+  }
+
+  .hero-art {
+    position: relative;
+    min-height: 490px;
+    border: 1px solid color-mix(in srgb, var(--ink) 12%, transparent);
+    border-radius: 38px;
+    background:
+      linear-gradient(150deg, color-mix(in srgb, var(--sky) 88%, var(--surface)), transparent 62%),
+      var(--surface);
+    box-shadow: var(--shadow-lg);
+    overflow: hidden;
+    transform: rotate(1.4deg);
+  }
+
+  .hero-art__grid {
+    position: absolute;
+    inset: 0;
+    background-image:
+      linear-gradient(
+        to right,
+        color-mix(in srgb, var(--ink) 7%, transparent) 1px,
+        transparent 1px
+      ),
+      linear-gradient(
+        to bottom,
+        color-mix(in srgb, var(--ink) 7%, transparent) 1px,
+        transparent 1px
+      );
+    background-size: 46px 46px;
+    mask-image: linear-gradient(to bottom, black, transparent 82%);
+  }
+
+  .hero-art__sun {
+    position: absolute;
+    top: 7%;
+    right: -3%;
+    width: 62%;
+    aspect-ratio: 1;
+    border-radius: 50%;
+    background:
+      radial-gradient(circle at 38% 34%, #f9d58e 0 4%, transparent 5%),
+      radial-gradient(circle at 35% 33%, #f8c36c, #e76a43 62%, #d95434 100%);
+    box-shadow:
+      0 28px 60px -22px rgba(228, 95, 61, 0.6),
+      inset -18px -24px 40px rgba(154, 42, 21, 0.14);
+    animation: float-soft 9s ease-in-out infinite;
+  }
+
+  .hero-art__ring {
+    position: absolute;
+    top: -12%;
+    right: -17%;
+    width: 84%;
+    aspect-ratio: 1;
+    border: 1px solid color-mix(in srgb, var(--ink) 18%, transparent);
+    border-radius: 50%;
+    animation: slow-spin 70s linear infinite;
+  }
+
+  .hero-art__ring::before {
+    position: absolute;
+    top: 9%;
+    left: 21%;
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    background: var(--ink);
+    content: '';
+  }
+
+  .hero-art__star {
+    position: absolute;
+    color: var(--ink);
+    font-family: var(--font-display);
+    line-height: 1;
+  }
+
+  .hero-art__star--one {
+    top: 11%;
+    left: 9%;
+    font-size: 1.7rem;
+    transform: rotate(-9deg);
+  }
+
+  .hero-art__star--two {
+    right: 12%;
+    bottom: 37%;
+    color: var(--surface);
+    font-size: 2.2rem;
+    opacity: 0.84;
+  }
+
+  .hero-art__label {
+    position: absolute;
+    top: 1.3rem;
+    left: 1.4rem;
+    color: color-mix(in srgb, var(--ink) 58%, transparent);
+    font-family: var(--font-mono);
+    font-size: 0.57rem;
+    font-weight: 650;
+    letter-spacing: 0.12em;
+  }
+
+  .now-card {
+    position: absolute;
+    right: 8%;
+    bottom: 8%;
+    left: 7%;
+    padding: 1.2rem 1.25rem 1.05rem;
+    border: 1px solid var(--line);
+    border-radius: 20px;
+    background: color-mix(in srgb, var(--surface) 93%, transparent);
+    box-shadow: var(--shadow-md);
+    transform: rotate(-1.8deg);
+    backdrop-filter: blur(12px);
+  }
+
+  .now-card__head {
+    display: flex;
+    gap: 0.55rem;
+    align-items: center;
+    color: var(--muted);
+    font-family: var(--font-mono);
+    font-size: 0.6rem;
+    font-weight: 650;
+    letter-spacing: 0.12em;
+  }
+
+  .now-card__line {
+    height: 1px;
+    background: var(--line);
+    flex: 1;
+  }
+
+  .now-card h2 {
+    margin-top: 0.7rem;
+    font-family: var(--font-display);
+    font-size: clamp(1.55rem, 2.3vw, 2.05rem);
+    font-weight: 500;
+    letter-spacing: -0.04em;
+  }
+
+  .now-card ul {
+    display: grid;
+    gap: 0.42rem;
+    padding: 0;
+    margin-top: 0.8rem;
+    list-style: none;
+  }
+
+  .now-card li {
+    position: relative;
+    padding-left: 0.95rem;
+    color: var(--ink-soft);
+    font-size: 0.73rem;
+    line-height: 1.55;
+  }
+
+  .now-card li::before {
+    position: absolute;
+    top: 0.6em;
+    left: 0;
+    width: 0.35rem;
+    height: 0.35rem;
+    border-radius: 50%;
+    background: var(--accent);
+    content: '';
+  }
+
+  .now-card__foot {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-top: 0.9rem;
+    border-top: 1px solid var(--line);
+    margin-top: 1rem;
+    color: var(--muted);
+    font-size: 0.64rem;
+    font-weight: 650;
+  }
+
+  .now-card__spark {
+    color: var(--accent);
+    font-size: 1.1rem;
+    animation: slow-spin 14s linear infinite;
+  }
+
+  .hero-ticker {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    padding-block: 0.85rem;
+    border-top: 1px solid var(--line);
+    border-bottom: 1px solid var(--line);
+    color: var(--muted);
+    font-family: var(--font-mono);
+    font-size: 0.58rem;
+    font-weight: 650;
+    letter-spacing: 0.13em;
+    overflow: hidden;
+    white-space: nowrap;
+    mask-image: linear-gradient(90deg, #000 0%, #000 88%, transparent 100%);
+    -webkit-mask-image: linear-gradient(90deg, #000 0%, #000 88%, transparent 100%);
+  }
+
+  .hero-ticker__star {
+    color: var(--accent);
+    font-size: 0.72rem;
+  }
+
+  .hero-ticker__line {
+    height: 1px;
+    background: var(--line);
+    flex: 1;
+  }
+
+  .hero-ticker__scroll {
+    color: var(--ink-soft);
+  }
+
+  .home-section {
+    padding-block: clamp(4rem, 8vw, 7.2rem) 0;
+  }
+
+  .title-dot {
+    color: var(--accent);
+  }
+
+  .latest-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1.18fr) minmax(0, 0.82fr);
+    gap: 1rem;
+  }
+
+  .latest-grid > :first-child {
+    grid-row: span 2;
+  }
+
+  .notes-section {
+    padding-top: clamp(4.5rem, 9vw, 8rem);
+  }
+
+  .notes-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1rem;
+  }
+
+  .empty-note {
+    padding: 2.5rem;
+    border: 1px dashed var(--line-strong);
+    border-radius: var(--radius-md);
+    color: var(--muted);
+    text-align: center;
+  }
+
+  .about-panel {
+    position: relative;
+    display: grid;
+    grid-template-columns: minmax(0, 0.9fr) minmax(280px, 0.7fr);
+    gap: clamp(2.5rem, 6vw, 6rem);
+    align-items: center;
+    padding: clamp(1.8rem, 5vw, 4.2rem);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-xl);
+    background:
+      linear-gradient(
+        120deg,
+        color-mix(in srgb, var(--moss-soft) 78%, var(--surface)),
+        transparent 64%
+      ),
+      var(--surface);
+    box-shadow: var(--shadow-md);
+    overflow: hidden;
+  }
+
+  .about-panel__copy {
+    position: relative;
+    z-index: 1;
+  }
+
+  .about-panel__copy h2 {
+    max-width: 14ch;
+    margin-top: 1rem;
+    font-size: clamp(1.9rem, 4vw, 3.2rem);
+    line-height: 1.12;
+  }
+
+  .about-panel__copy > p:not(.eyebrow) {
+    max-width: 47ch;
+    margin-top: 1.1rem;
+    color: var(--ink-soft);
+    font-size: 0.87rem;
+    line-height: 1.8;
+  }
+
+  .about-panel__copy .button {
+    margin-top: 1.7rem;
+  }
+
+  .about-panel__quote {
+    position: relative;
+    z-index: 1;
+    padding: 1.5rem 1.4rem 1.4rem;
+    border: 1px solid color-mix(in srgb, var(--ink) 12%, transparent);
+    border-radius: 22px;
+    background: color-mix(in srgb, var(--bg) 70%, transparent);
+    transform: rotate(1.8deg);
+  }
+
+  .about-panel__quote p {
+    font-family: var(--font-display);
+    font-size: clamp(1.4rem, 2.4vw, 2rem);
+    font-weight: 500;
+    letter-spacing: -0.035em;
+    line-height: 1.32;
+  }
+
+  .about-panel__quote footer {
+    margin-top: 1rem;
+    color: var(--muted);
+    font-size: 0.68rem;
+    font-weight: 650;
+  }
+
+  .about-panel__mark {
+    display: block;
+    height: 0.8rem;
+    color: var(--accent);
+    font-family: var(--font-display);
+    font-size: 3.4rem;
+    line-height: 0.7;
+  }
+
+  .about-panel__orbit {
+    position: absolute;
+    top: -8rem;
+    right: -7rem;
+    width: 22rem;
+    height: 22rem;
+    border: 1px solid color-mix(in srgb, var(--ink) 10%, transparent);
+    border-radius: 50%;
+    pointer-events: none;
+  }
+
+  .about-panel__orbit::before {
+    position: absolute;
+    inset: 3rem;
+    border: 1px solid color-mix(in srgb, var(--ink) 8%, transparent);
+    border-radius: 50%;
+    content: '';
+  }
+
+  .about-panel__asterisk {
+    position: absolute;
+    right: 1.8rem;
+    bottom: 1.2rem;
+    color: var(--accent);
+    font-size: 1.8rem;
+    opacity: 0.8;
+  }
+
+  @media (max-width: 1040px) {
+    .hero__grid {
+      grid-template-columns: minmax(0, 1fr) minmax(300px, 0.7fr);
+      gap: 2.5rem;
+    }
+
+    .hero__copy h1 {
+      font-size: clamp(3.4rem, 8.5vw, 6.4rem);
+    }
+
+    .hero-art {
+      min-height: 430px;
+    }
+
+    .now-card {
+      right: 6%;
+      left: 6%;
+    }
+
+    .notes-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .notes-grid > :last-child {
+      grid-column: span 2;
+    }
+  }
+
+  @media (max-width: 820px) {
+    .hero__grid {
+      grid-template-columns: 1fr;
+      gap: 2.6rem;
+    }
+
+    .hero__copy h1 {
+      max-width: 100%;
+      font-size: clamp(3.2rem, 13vw, 6.2rem);
+    }
+
+    .hero-art {
+      width: min(100%, 540px);
+      min-height: 480px;
+      margin-inline: auto;
+    }
+
+    .latest-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .latest-grid > :first-child {
+      grid-row: auto;
+    }
+
+    .about-panel {
+      grid-template-columns: 1fr;
+      gap: 2.2rem;
+    }
+
+    .about-panel__quote {
+      max-width: 500px;
+      margin-inline: auto;
+    }
+
+    .hero-ticker__line,
+    .hero-ticker__scroll {
+      display: none;
+    }
+  }
+
+  @media (max-width: 620px) {
+    .hero {
+      padding-top: 1rem;
+    }
+
+    .hero__copy h1 {
+      font-size: clamp(2.9rem, 13.2vw, 4.4rem);
+    }
+
+    .hero__intro {
+      margin-top: 1.3rem;
+      font-size: 0.93rem;
+    }
+
+    .hero__actions .button {
+      min-height: 44px;
+      padding-inline: 1rem;
+      font-size: 0.82rem;
+    }
+
+    .hero__stats {
+      margin-top: 2rem;
+      font-size: 0.66rem;
+    }
+
+    .hero-art {
+      min-height: 410px;
+      border-radius: 28px;
+    }
+
+    .hero-art__sun {
+      width: 70%;
+    }
+
+    .hero-art__label {
+      top: 1.1rem;
+      left: 1.1rem;
+      font-size: 0.52rem;
+    }
+
+    .now-card {
+      right: 5%;
+      bottom: 7%;
+      left: 5%;
+      padding: 1rem;
+    }
+
+    .now-card h2 {
+      font-size: 1.55rem;
+    }
+
+    .now-card li {
+      font-size: 0.7rem;
+    }
+
+    .hero-ticker {
+      gap: 0.7rem;
+      font-size: 0.52rem;
+    }
+
+    .hero-ticker span:nth-child(6),
+    .hero-ticker span:nth-child(8) {
+      display: none;
+    }
+
+    .notes-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .notes-grid > :last-child {
+      grid-column: auto;
+    }
+
+    .about-panel {
+      padding: 1.35rem;
+      border-radius: 24px;
+    }
+
+    .about-panel__quote {
+      transform: none;
+    }
+
+    .about-panel__orbit {
+      width: 16rem;
+      height: 16rem;
+    }
+  }
+</style>

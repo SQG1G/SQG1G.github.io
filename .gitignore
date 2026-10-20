@@ -1,0 +1,28 @@
+# dependencies
+node_modules/
+.node_modules-astro7/
+
+# build output
+dist/
+.astro/
+
+# local environment
+.env
+.env.*
+!.env.example
+
+# editor / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# logs and temporary files
+*.log
+npm-debug.log*
+package-lock.astro7.json
+test-results/
+playwright-report/
+
+# local tooling
+.dsh-tools/

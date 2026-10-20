@@ -1,0 +1,105 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import PageHeader from '../../components/PageHeader.astro';
+import PostCard from '../../components/PostCard.astro';
+import NoteCard from '../../components/NoteCard.astro';
+import { getWriting, tagHref } from '../../lib/content';
+
+export async function getStaticPaths() {
+  const entries = await getWriting();
+  const tags = [...new Set(entries.flatMap((entry) => entry.data.tags))];
+
+  return tags.map((tag) => ({
+    params: { tag },
+    props: {
+      tag,
+      entries: entries.filter((entry) => entry.data.tags.includes(tag)),
+    },
+  }));
+}
+
+const { tag, entries } = Astro.props;
+const countLabel = `${entries.length} 篇相关内容`;
+---
+
+<BaseLayout title={`#${tag}`} description={`所有带有「${tag}」标签的文章和笔记。`}>
+  <PageHeader
+    eyebrow="BROWSE BY TOPIC"
+    title="标签："
+    titleAccent={`#${tag}`}
+    description={`这里收集了所有与「${tag}」相关的内容，共 ${entries.length} 篇。`}
+    issue=""
+    countLabel={countLabel}
+  />
+
+  <section class="container tag-archive" aria-label={`${tag} 标签下的内容`}>
+    <div class="tag-archive__top">
+      <a class="back-link" href="/tags/">
+        ← 全部标签
+      </a>
+      <a class="tag-pill" href={tagHref(tag)}>
+        #{tag}
+      </a>
+    </div>
+
+    <div class="tag-archive__grid">
+      {entries.map((entry, index) =>
+        entry.collection === 'posts' ? (
+          <PostCard entry={entry} index={index} />
+        ) : (
+          <NoteCard entry={entry} index={index} />
+        ),
+      )}
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .tag-archive {
+    padding-bottom: clamp(3rem, 7vw, 6rem);
+  }
+
+  .tag-archive__top {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    justify-content: space-between;
+    padding-block: 0.9rem;
+    border-top: 1px solid var(--line);
+    border-bottom: 1px solid var(--line);
+    margin-bottom: 1.5rem;
+  }
+
+  .back-link {
+    color: var(--muted);
+    font-size: 0.73rem;
+    font-weight: 650;
+    text-decoration: none;
+  }
+
+  .back-link:hover {
+    color: var(--accent);
+  }
+
+  .tag-pill {
+    padding: 0.3rem 0.7rem;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    color: var(--ink-soft);
+    font-size: 0.7rem;
+    font-weight: 650;
+    text-decoration: none;
+  }
+
+  .tag-archive__grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1rem;
+  }
+
+  @media (max-width: 760px) {
+    .tag-archive__grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

@@ -1,0 +1,642 @@
+---
+---
+
+<dialog class="search-dialog" data-search-dialog aria-labelledby="search-dialog-title">
+  <div class="search-panel">
+    <div class="search-head">
+      <div>
+        <p class="eyebrow">SEARCH THE GARDEN</p>
+        <h2 id="search-dialog-title">找点什么</h2>
+      </div>
+      <button class="search-close" type="button" data-search-close aria-label="关闭搜索">
+        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path
+            d="m6 6 12 12M18 6 6 18"
+            stroke="currentColor"
+            stroke-width="1.8"
+            stroke-linecap="round"
+          ></path>
+        </svg>
+      </button>
+    </div>
+
+    <label class="search-field">
+      <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <circle cx="10.8" cy="10.8" r="6.8" stroke="currentColor" stroke-width="1.8"></circle>
+        <path
+          d="m16 16 4.2 4.2"
+          stroke="currentColor"
+          stroke-width="1.8"
+          stroke-linecap="round"
+        ></path>
+      </svg>
+      <span class="visually-hidden">搜索文章和笔记</span>
+      <input
+        type="search"
+        placeholder="搜索标题、标签或正文…"
+        autocomplete="off"
+        spellcheck="false"
+        enterkeyhint="go"
+        data-search-input
+        aria-controls="search-results"
+      />
+      <kbd>ESC</kbd>
+    </label>
+
+    <div class="search-status" data-search-status aria-live="polite">
+      输入关键词，开始在这座花园里找东西。
+    </div>
+
+    <ul id="search-results" class="search-results" data-search-results aria-label="搜索结果"></ul>
+
+    <div class="search-empty" data-search-empty hidden>
+      <span class="search-empty__mark" aria-hidden="true">
+        ∅
+      </span>
+      <p>没有找到匹配的内容。</p>
+      <span>
+        换一个词试试，或者去<a href="/posts/">文章列表</a>逛逛。
+      </span>
+    </div>
+
+    <div class="search-foot">
+      <span>
+        <kbd>↑</kbd>
+        <kbd>↓</kbd> 选择
+      </span>
+      <span>
+        <kbd>↵</kbd> 打开
+      </span>
+      <span>全文索引在构建时生成</span>
+    </div>
+  </div>
+</dialog>
+
+<style>
+  .search-dialog {
+    width: min(680px, calc(100vw - 2rem));
+    max-height: min(78vh, 720px);
+    padding: 0;
+    border: 1px solid var(--line);
+    border-radius: 28px;
+    margin: 9vh auto auto;
+    background: var(--surface);
+    box-shadow: 0 50px 120px -30px rgba(10, 16, 12, 0.65);
+    color: var(--ink);
+    overflow: hidden;
+  }
+
+  .search-dialog::backdrop {
+    background: rgba(12, 18, 14, 0.58);
+    backdrop-filter: blur(7px);
+  }
+
+  .search-dialog[open] {
+    animation: dialog-in 260ms var(--ease-out) both;
+  }
+
+  .search-panel {
+    display: flex;
+    max-height: min(78vh, 720px);
+    flex-direction: column;
+    padding: 1.4rem;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+
+  .search-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: 1.2rem;
+  }
+
+  .search-head h2 {
+    margin-top: 0.45rem;
+    font-size: clamp(1.7rem, 4vw, 2.3rem);
+  }
+
+  .search-close {
+    display: grid;
+    width: 38px;
+    height: 38px;
+    padding: 0;
+    border: 1px solid var(--line);
+    border-radius: 50%;
+    background: transparent;
+    color: var(--muted);
+    cursor: pointer;
+    place-items: center;
+    transition:
+      background-color 160ms ease,
+      color 160ms ease,
+      transform 160ms ease;
+  }
+
+  .search-close:hover {
+    background: var(--surface-soft);
+    color: var(--ink);
+    transform: rotate(5deg);
+  }
+
+  .search-close svg {
+    width: 17px;
+    height: 17px;
+  }
+
+  .search-field {
+    display: flex;
+    gap: 0.7rem;
+    align-items: center;
+    padding: 0.8rem 0.9rem 0.8rem 1rem;
+    border: 1px solid var(--line-strong);
+    border-radius: 16px;
+    background: var(--bg);
+    transition:
+      border-color 160ms ease,
+      box-shadow 160ms ease;
+  }
+
+  .search-field:focus-within {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 4px var(--accent-wash);
+  }
+
+  .search-field > svg {
+    width: 20px;
+    height: 20px;
+    color: var(--muted);
+    flex: none;
+  }
+
+  .search-field input {
+    width: 100%;
+    min-width: 0;
+    padding: 0;
+    border: 0;
+    outline: 0;
+    background: transparent;
+    color: var(--ink);
+    font-size: 1rem;
+    font-weight: 550;
+  }
+
+  .search-field input::placeholder {
+    color: var(--muted);
+    font-weight: 450;
+  }
+
+  .search-field input::-webkit-search-cancel-button {
+    display: none;
+    -webkit-appearance: none;
+    appearance: none;
+  }
+
+  .search-field kbd,
+  .search-foot kbd {
+    padding: 0.12rem 0.36rem;
+    border: 1px solid var(--line);
+    border-radius: 5px;
+    background: var(--surface);
+    color: var(--muted);
+    font-family: var(--font-mono);
+    font-size: 0.63rem;
+    line-height: 1.6;
+    white-space: nowrap;
+  }
+
+  .search-field > kbd {
+    flex: none;
+  }
+
+  .search-status {
+    padding: 0.85rem 0.2rem 0.35rem;
+    color: var(--muted);
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+  }
+
+  .search-results {
+    display: grid;
+    gap: 0.45rem;
+    margin-inline: -0.25rem;
+    list-style: none;
+  }
+
+  /* Search results are created by the browser script, so these styles must be
+     global rather than Astro-scoped. */
+  :global(.search-result) {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    gap: 0.85rem;
+    align-items: start;
+    padding: 0.85rem 0.9rem;
+    border: 1px solid transparent;
+    border-radius: 14px;
+    color: var(--ink);
+    text-decoration: none;
+    transition:
+      background-color 150ms ease,
+      border-color 150ms ease,
+      transform 150ms var(--ease-out);
+  }
+
+  :global(.search-result:hover),
+  :global(.search-result.is-active) {
+    border-color: var(--line);
+    background: var(--surface-soft);
+    transform: translateX(2px);
+  }
+
+  :global(.search-result__type) {
+    padding: 0.18rem 0.45rem;
+    border-radius: 999px;
+    margin-top: 0.1rem;
+    background: var(--accent-soft);
+    color: var(--accent-strong);
+    font-size: 0.6rem;
+    font-weight: 750;
+    letter-spacing: 0.05em;
+    white-space: nowrap;
+  }
+
+  :global(.search-result__body) {
+    min-width: 0;
+  }
+
+  :global(.search-result h3) {
+    font-size: 0.93rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    line-height: 1.45;
+  }
+
+  :global(.search-result p) {
+    display: -webkit-box;
+    margin-top: 0.22rem;
+    color: var(--muted);
+    font-size: 0.74rem;
+    line-height: 1.6;
+    overflow: hidden;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+  }
+
+  :global(.search-result__meta) {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.45rem;
+    margin-top: 0.45rem;
+    color: var(--muted);
+    font-size: 0.63rem;
+  }
+
+  :global(.search-result__meta span + span::before) {
+    margin-right: 0.45rem;
+    content: '·';
+  }
+
+  :global(.search-result__arrow) {
+    margin-top: 0.15rem;
+    color: var(--muted);
+    font-size: 0.85rem;
+    transition: transform 150ms var(--ease-out);
+  }
+
+  :global(.search-result:hover .search-result__arrow),
+  :global(.search-result.is-active .search-result__arrow) {
+    color: var(--accent);
+    transform: translate(2px, -2px);
+  }
+
+  :global(.search-result mark) {
+    border-radius: 3px;
+    background: var(--accent-soft);
+    color: var(--accent-strong);
+  }
+
+  .search-empty {
+    display: grid;
+    gap: 0.3rem;
+    justify-items: center;
+    padding: 2.2rem 1rem;
+    color: var(--muted);
+    font-size: 0.8rem;
+    text-align: center;
+  }
+
+  .search-empty__mark {
+    color: var(--line-strong);
+    font-family: var(--font-display);
+    font-size: 3rem;
+    line-height: 1;
+  }
+
+  .search-empty p {
+    color: var(--ink);
+    font-size: 0.9rem;
+    font-weight: 650;
+  }
+
+  .search-empty a {
+    color: var(--accent-strong);
+    text-underline-offset: 0.18em;
+  }
+
+  .search-foot {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.65rem 1.2rem;
+    align-items: center;
+    padding-top: 1rem;
+    border-top: 1px solid var(--line);
+    margin-top: 1rem;
+    color: var(--muted);
+    font-size: 0.62rem;
+  }
+
+  .search-foot span:last-child {
+    margin-left: auto;
+  }
+
+  @keyframes dialog-in {
+    from {
+      opacity: 0;
+      transform: translateY(12px) scale(0.985);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+  }
+
+  @media (max-width: 640px) {
+    .search-dialog {
+      width: calc(100vw - 1rem);
+      max-height: 88vh;
+      border-radius: 22px;
+      margin-top: 4vh;
+    }
+
+    .search-panel {
+      max-height: 88vh;
+      padding: 1.1rem;
+    }
+
+    .search-field > kbd {
+      display: none;
+    }
+
+    .search-foot span:last-child {
+      display: none;
+    }
+  }
+</style>
+
+<script>
+  interface SearchItem {
+    title: string;
+    description: string;
+    tags: string[];
+    content: string;
+    date: string;
+    type: 'post' | 'note';
+    url: string;
+  }
+
+  const dialog = document.querySelector<HTMLDialogElement>('[data-search-dialog]')!;
+  const input = document.querySelector<HTMLInputElement>('[data-search-input]')!;
+  const resultsList = document.querySelector<HTMLUListElement>('[data-search-results]')!;
+  const status = document.querySelector<HTMLElement>('[data-search-status]')!;
+  const empty = document.querySelector<HTMLElement>('[data-search-empty]')!;
+  const closeButton = document.querySelector<HTMLButtonElement>('[data-search-close]');
+
+  let searchIndex: SearchItem[] | null = null;
+  let indexPromise: Promise<SearchItem[]> | null = null;
+  let activeIndex = -1;
+  let currentResults: SearchItem[] = [];
+
+  const labelForType = (type: SearchItem['type']) => (type === 'post' ? '文章' : '笔记');
+
+  const loadIndex = () => {
+    if (indexPromise) return indexPromise;
+
+    status.textContent = '正在准备搜索索引…';
+    indexPromise = fetch('/search.json')
+      .then((response) => {
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        return response.json();
+      })
+      .then((data: SearchItem[]) => {
+        searchIndex = data;
+        status.textContent = '输入关键词，开始在这座花园里找东西。';
+        return data;
+      })
+      .catch(() => {
+        indexPromise = null;
+        status.textContent = '搜索索引暂时没有加载成功，请刷新后再试。';
+        throw new Error('Unable to load search index');
+      });
+
+    return indexPromise;
+  };
+
+  const appendHighlighted = (element: HTMLElement, text: unknown, query: string) => {
+    const source = String(text ?? '');
+    const needle = query.trim().toLowerCase();
+    const index = needle ? source.toLowerCase().indexOf(needle) : -1;
+
+    if (!needle || index === -1) {
+      element.textContent = source;
+      return;
+    }
+
+    element.append(document.createTextNode(source.slice(0, index)));
+    const mark = document.createElement('mark');
+    mark.textContent = source.slice(index, index + needle.length);
+    element.append(mark, document.createTextNode(source.slice(index + needle.length)));
+  };
+
+  const setActive = (index: number) => {
+    const items = [...resultsList.querySelectorAll('.search-result')];
+    if (!items.length) return;
+
+    activeIndex = Math.max(0, Math.min(index, items.length - 1));
+    items.forEach((item, itemIndex) => {
+      item.classList.toggle('is-active', itemIndex === activeIndex);
+    });
+    items[activeIndex]?.scrollIntoView({ block: 'nearest' });
+  };
+
+  const renderResults = (query: string) => {
+    const trimmed = query.trim().toLowerCase();
+    resultsList.replaceChildren();
+    activeIndex = -1;
+
+    if (!trimmed) {
+      currentResults = [];
+      empty.hidden = true;
+      status.textContent = '输入关键词，开始在这座花园里找东西。';
+      return;
+    }
+
+    const scored = (searchIndex ?? [])
+      .map((item: SearchItem) => {
+        const title = item.title.toLowerCase();
+        const description = item.description.toLowerCase();
+        const tags = item.tags.join(' ').toLowerCase();
+        const content = item.content.toLowerCase();
+        let score = 0;
+
+        if (title === trimmed) score += 100;
+        if (title.includes(trimmed)) score += 30;
+        if (tags.includes(trimmed)) score += 12;
+        if (description.includes(trimmed)) score += 8;
+        if (content.includes(trimmed)) score += 2;
+
+        return { item, score };
+      })
+      .filter((entry) => entry.score > 0)
+      .sort((a, b) => b.score - a.score)
+      .slice(0, 8)
+      .map((entry) => entry.item);
+
+    currentResults = scored;
+
+    if (!scored.length) {
+      empty.hidden = false;
+      status.textContent = `没有找到与「${query.trim()}」相关的内容。`;
+      return;
+    }
+
+    empty.hidden = true;
+    status.textContent = `找到 ${scored.length} 条相关内容。`;
+
+    scored.forEach((item: SearchItem) => {
+      const li = document.createElement('li');
+      const link = document.createElement('a');
+      link.className = 'search-result';
+      link.href = item.url;
+
+      const type = document.createElement('span');
+      type.className = 'search-result__type';
+      type.textContent = labelForType(item.type);
+
+      const body = document.createElement('div');
+      body.className = 'search-result__body';
+
+      const title = document.createElement('h3');
+      appendHighlighted(title, item.title, query);
+
+      const description = document.createElement('p');
+      appendHighlighted(description, item.description, query);
+
+      const meta = document.createElement('div');
+      meta.className = 'search-result__meta';
+      const date = document.createElement('span');
+      date.textContent = item.date;
+      meta.append(date);
+      if (item.tags.length) {
+        const tags = document.createElement('span');
+        tags.textContent = item.tags.slice(0, 3).join(' · ');
+        meta.append(tags);
+      }
+
+      const arrow = document.createElement('span');
+      arrow.className = 'search-result__arrow';
+      arrow.setAttribute('aria-hidden', 'true');
+      arrow.textContent = '↗';
+
+      body.append(title, description, meta);
+      link.append(type, body, arrow);
+      li.append(link);
+      resultsList.append(li);
+    });
+
+    setActive(0);
+  };
+
+  const openSearch = () => {
+    if (!dialog.open) {
+      dialog.showModal();
+      document.body.classList.add('is-locked');
+    }
+
+    loadIndex()
+      .then(() => {
+        renderResults(input.value);
+        input.focus();
+        input.select();
+      })
+      .catch(() => {
+        input.focus();
+      });
+  };
+
+  const closeSearch = () => {
+    if (dialog.open) dialog.close();
+  };
+
+  document.querySelectorAll('[data-search-open]').forEach((button) => {
+    button.addEventListener('click', openSearch);
+  });
+
+  closeButton?.addEventListener('click', closeSearch);
+
+  dialog?.addEventListener('click', (event) => {
+    if (event.target === dialog) closeSearch();
+  });
+
+  dialog?.addEventListener('close', () => {
+    document.body.classList.remove('is-locked');
+  });
+
+  let inputTimer: number | undefined;
+
+  input?.addEventListener('input', () => {
+    window.clearTimeout(inputTimer);
+    inputTimer = window.setTimeout(() => {
+      if (searchIndex) renderResults(input.value);
+    }, 90);
+  });
+
+  document.addEventListener('keydown', (event) => {
+    const isTypingTarget =
+      event.target instanceof HTMLElement &&
+      (event.target.matches('input, textarea, select') || event.target.isContentEditable);
+
+    if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'k') {
+      event.preventDefault();
+      openSearch();
+      return;
+    }
+
+    if (!dialog?.open) return;
+
+    if (event.key === 'Escape') {
+      event.preventDefault();
+      closeSearch();
+      return;
+    }
+
+    if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+      event.preventDefault();
+      if (!currentResults.length) return;
+      setActive(activeIndex + (event.key === 'ArrowDown' ? 1 : -1));
+      return;
+    }
+
+    const activeResult = currentResults[activeIndex];
+    if (event.key === 'Enter' && activeResult) {
+      event.preventDefault();
+      window.location.href = activeResult.url;
+      return;
+    }
+
+    if (event.key === '/' && !isTypingTarget) {
+      event.preventDefault();
+      openSearch();
+    }
+  });
+</script>

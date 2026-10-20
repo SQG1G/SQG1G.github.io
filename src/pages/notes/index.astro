@@ -1,0 +1,133 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import PageHeader from '../../components/PageHeader.astro';
+import NoteCard from '../../components/NoteCard.astro';
+import { NOTE_STATUS, getNotes } from '../../lib/content';
+
+const notes = await getNotes();
+const statuses = Object.entries(NOTE_STATUS).map(([key, status]) => ({ key, ...status }));
+---
+
+<BaseLayout title="笔记" description="更短、更轻的知识花园：学习记录、工具片段和不完整的想法。">
+  <PageHeader
+    eyebrow="THE KNOWLEDGE GARDEN"
+    title="还在一起"
+    titleAccent="生长"
+    titleTail="的笔记。"
+    description="不是每篇内容都需要「完成」。这里放更短的记录、工具片段和尚未想透的问题，允许它们慢慢长大。"
+    issue="02"
+    countLabel={`${notes.length} 则笔记`}
+  />
+
+  <section class="container notes-archive" aria-label="笔记列表">
+    <div class="status-legend" aria-label="笔记状态说明">
+      {statuses.map((status) => (
+        <span class="status-legend__item">
+          <span
+            class:list={['status-legend__dot', `status-legend__dot--${status.key}`]}
+            aria-hidden="true"
+          ></span>
+          <strong>{status.label}</strong>
+          <span>{status.description}</span>
+        </span>
+      ))}
+    </div>
+
+    {notes.length > 0 ? (
+      <div class="notes-grid">
+        {notes.map((note, index) => (
+          <NoteCard entry={note} index={index} />
+        ))}
+      </div>
+    ) : (
+      <div class="notes-empty">
+        <p>花园刚刚翻土。</p>
+        <span>第一颗种子很快会发芽。</span>
+      </div>
+    )}
+  </section>
+</BaseLayout>
+
+<style>
+  .notes-archive {
+    padding-bottom: clamp(3rem, 7vw, 6rem);
+  }
+
+  .status-legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.8rem 1.6rem;
+    padding-block: 1rem;
+    border-top: 1px solid var(--line);
+    border-bottom: 1px solid var(--line);
+    margin-bottom: clamp(1.8rem, 4vw, 2.8rem);
+    color: var(--muted);
+    font-size: 0.7rem;
+  }
+
+  .status-legend__item {
+    display: inline-flex;
+    gap: 0.4rem;
+    align-items: center;
+  }
+
+  .status-legend__item strong {
+    color: var(--ink-soft);
+    font-size: 0.7rem;
+  }
+
+  .status-legend__dot {
+    width: 0.45rem;
+    height: 0.45rem;
+    border-radius: 50%;
+    background: var(--gold);
+  }
+
+  .status-legend__dot--growing {
+    background: var(--moss);
+  }
+
+  .status-legend__dot--evergreen {
+    background: var(--accent);
+  }
+
+  .notes-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1rem;
+  }
+
+  .notes-empty {
+    display: grid;
+    gap: 0.35rem;
+    justify-items: center;
+    padding: 4rem 1rem;
+    border: 1px dashed var(--line-strong);
+    border-radius: var(--radius-md);
+    color: var(--muted);
+    font-size: 0.85rem;
+    text-align: center;
+  }
+
+  .notes-empty p {
+    color: var(--ink);
+    font-weight: 700;
+  }
+
+  @media (max-width: 1000px) {
+    .notes-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  @media (max-width: 640px) {
+    .notes-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .status-legend {
+      display: grid;
+      gap: 0.55rem;
+    }
+  }
+</style>

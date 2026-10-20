@@ -1,0 +1,475 @@
+---
+import { SITE } from '../config';
+
+const pathname = Astro.url.pathname;
+
+const isActive = (href: string) => (href === '/' ? pathname === '/' : pathname.startsWith(href));
+---
+
+<header class="site-header" data-site-header>
+  <div class="header-shell">
+    <a class="brand" href="/" aria-label={`${SITE.name} 首页`}>
+      <span class="brand-mark" aria-hidden="true">
+        <svg viewBox="0 0 32 32" fill="none">
+          <circle cx="16" cy="16" r="6.2" fill="currentColor"></circle>
+          <path
+            d="M16 2.8v4.1M16 25.1v4.1M2.8 16h4.1M25.1 16h4.1M6.7 6.7l2.9 2.9M22.4 22.4l2.9 2.9M25.3 6.7l-2.9 2.9M9.6 22.4l-2.9 2.9"
+            stroke="currentColor"
+            stroke-width="1.8"
+            stroke-linecap="round"
+          ></path>
+        </svg>
+      </span>
+      <span class="brand-word">
+        SQG1G<span class="brand-dot">.</span>
+      </span>
+    </a>
+
+    <nav class="primary-nav" aria-label="主导航">
+      {SITE.nav.map((item) => (
+        <a
+          class:list={['nav-link', { 'is-active': isActive(item.href) }]}
+          href={item.href}
+          aria-current={isActive(item.href) ? 'page' : undefined}
+        >
+          {item.label}
+        </a>
+      ))}
+    </nav>
+
+    <div class="header-actions">
+      <button
+        class="icon-button search-open"
+        type="button"
+        data-search-open
+        aria-label="搜索文章和笔记"
+        title="搜索（Ctrl / ⌘ + K）"
+      >
+        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <circle cx="10.8" cy="10.8" r="6.8" stroke="currentColor" stroke-width="1.8"></circle>
+          <path
+            d="m16 16 4.2 4.2"
+            stroke="currentColor"
+            stroke-width="1.8"
+            stroke-linecap="round"
+          ></path>
+        </svg>
+      </button>
+
+      <button
+        class="icon-button theme-toggle"
+        type="button"
+        data-theme-toggle
+        aria-label="切换到深色模式"
+        title="切换明暗主题"
+      >
+        <svg data-theme-icon="light" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path
+            d="M20.3 14.1A8.2 8.2 0 0 1 9.9 3.7 8.4 8.4 0 1 0 20.3 14.1Z"
+            stroke="currentColor"
+            stroke-width="1.8"
+            stroke-linejoin="round"
+          ></path>
+        </svg>
+        <svg data-theme-icon="dark" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <circle cx="12" cy="12" r="4.2" stroke="currentColor" stroke-width="1.8"></circle>
+          <path
+            d="M12 2.8v2.1M12 19.1v2.1M3.8 12h2.1M18.1 12h2.1M6.2 6.2l1.5 1.5M16.3 16.3l1.5 1.5M17.8 6.2l-1.5 1.5M7.7 16.3l-1.5 1.5"
+            stroke="currentColor"
+            stroke-width="1.8"
+            stroke-linecap="round"
+          ></path>
+        </svg>
+      </button>
+
+      <button
+        class="icon-button menu-toggle"
+        type="button"
+        data-menu-toggle
+        aria-expanded="false"
+        aria-controls="mobile-navigation"
+        aria-label="打开菜单"
+      >
+        <svg class="menu-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path
+            d="M4 7.5h16M4 12h16M4 16.5h11"
+            stroke="currentColor"
+            stroke-width="1.8"
+            stroke-linecap="round"
+          ></path>
+        </svg>
+        <svg class="close-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path
+            d="m6 6 12 12M18 6 6 18"
+            stroke="currentColor"
+            stroke-width="1.8"
+            stroke-linecap="round"
+          ></path>
+        </svg>
+      </button>
+    </div>
+  </div>
+
+  <nav id="mobile-navigation" class="mobile-nav" aria-label="移动端导航" hidden>
+    {SITE.nav.map((item, index) => (
+      <a
+        class:list={['mobile-nav__link', { 'is-active': isActive(item.href) }]}
+        href={item.href}
+        aria-current={isActive(item.href) ? 'page' : undefined}
+      >
+        <span>{item.label}</span>
+        <span class="mobile-nav__index">0{index + 1}</span>
+      </a>
+    ))}
+    <div class="mobile-nav__footer">
+      <a href={SITE.github} target="_blank" rel="noreferrer">
+        GitHub ↗
+      </a>
+      <a href="/rss.xml">RSS ↗</a>
+    </div>
+  </nav>
+</header>
+
+<style>
+  .site-header {
+    position: sticky;
+    z-index: 50;
+    top: 0;
+    padding-top: 14px;
+    pointer-events: none;
+  }
+
+  .header-shell {
+    display: flex;
+    width: min(100% - (var(--page-gutter) * 2), var(--container));
+    height: 64px;
+    align-items: center;
+    padding: 0 10px 0 20px;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    margin-inline: auto;
+    background: var(--surface-glass);
+    box-shadow: var(--shadow-sm);
+    backdrop-filter: blur(18px);
+    pointer-events: auto;
+    transition:
+      background-color 200ms ease,
+      box-shadow 200ms ease,
+      border-color 200ms ease;
+  }
+
+  .site-header.is-scrolled .header-shell {
+    border-color: var(--line-strong);
+    box-shadow: var(--shadow-md);
+  }
+
+  .brand {
+    display: inline-flex;
+    gap: 0.6rem;
+    align-items: center;
+    color: var(--ink);
+    text-decoration: none;
+    flex: none;
+  }
+
+  .brand-mark {
+    display: grid;
+    width: 27px;
+    height: 27px;
+    border-radius: 50%;
+    background: var(--accent);
+    color: #fff8ee;
+    place-items: center;
+    transition: transform 500ms var(--ease-out);
+  }
+
+  .brand:hover .brand-mark {
+    transform: rotate(45deg);
+  }
+
+  .brand-mark svg {
+    width: 19px;
+    height: 19px;
+  }
+
+  .brand-word {
+    font-size: 1.02rem;
+    font-weight: 800;
+    letter-spacing: -0.055em;
+  }
+
+  .brand-dot {
+    color: var(--accent);
+  }
+
+  .primary-nav {
+    display: flex;
+    gap: 0.1rem;
+    align-items: center;
+    margin-left: auto;
+  }
+
+  .nav-link {
+    position: relative;
+    padding: 0.5rem 0.78rem;
+    border-radius: 999px;
+    color: var(--ink-soft);
+    font-size: 0.82rem;
+    font-weight: 650;
+    text-decoration: none;
+    transition:
+      background-color 160ms ease,
+      color 160ms ease;
+  }
+
+  .nav-link:hover {
+    background: var(--surface-soft);
+    color: var(--ink);
+  }
+
+  .nav-link.is-active {
+    background: var(--ink);
+    color: var(--bg);
+  }
+
+  .header-actions {
+    display: flex;
+    gap: 0.18rem;
+    align-items: center;
+    margin-left: 0.7rem;
+  }
+
+  .icon-button {
+    display: grid;
+    width: 38px;
+    height: 38px;
+    padding: 0;
+    border: 1px solid transparent;
+    border-radius: 50%;
+    background: transparent;
+    color: var(--ink-soft);
+    cursor: pointer;
+    place-items: center;
+    transition:
+      background-color 160ms ease,
+      border-color 160ms ease,
+      color 160ms ease,
+      transform 160ms var(--ease-out);
+  }
+
+  .icon-button:hover {
+    border-color: var(--line);
+    background: var(--surface-soft);
+    color: var(--ink);
+  }
+
+  .icon-button:active {
+    transform: scale(0.94);
+  }
+
+  .icon-button svg {
+    width: 18px;
+    height: 18px;
+  }
+
+  .menu-toggle {
+    display: none;
+  }
+
+  .close-icon {
+    display: none;
+  }
+
+  .mobile-nav {
+    width: min(100% - (var(--page-gutter) * 2), var(--container));
+    padding: 0.45rem 0.8rem 0.9rem;
+    border: 1px solid var(--line);
+    border-radius: 24px;
+    margin: 0.5rem auto 0;
+    background: var(--surface);
+    box-shadow: var(--shadow-lg);
+    pointer-events: auto;
+    animation: menu-in 220ms var(--ease-out) both;
+  }
+
+  .mobile-nav__link {
+    display: flex;
+    min-height: 50px;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.55rem 0.9rem;
+    border-radius: 14px;
+    color: var(--ink);
+    font-size: 1rem;
+    font-weight: 650;
+    text-decoration: none;
+  }
+
+  .mobile-nav__link:hover,
+  .mobile-nav__link.is-active {
+    background: var(--surface-soft);
+  }
+
+  .mobile-nav__index {
+    color: var(--muted);
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+  }
+
+  .mobile-nav__footer {
+    display: flex;
+    gap: 1.2rem;
+    padding: 0.9rem;
+    border-top: 1px solid var(--line);
+    margin-top: 0.45rem;
+  }
+
+  .mobile-nav__footer a {
+    color: var(--muted);
+    font-size: 0.78rem;
+    font-weight: 650;
+    text-decoration: none;
+  }
+
+  .mobile-nav__footer a:hover {
+    color: var(--accent);
+  }
+
+  @keyframes menu-in {
+    from {
+      opacity: 0;
+      transform: translateY(-8px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @media (max-width: 860px) {
+    .primary-nav {
+      display: none;
+    }
+
+    .menu-toggle {
+      display: grid;
+    }
+
+    .site-header.menu-open .menu-icon {
+      display: none;
+    }
+
+    .site-header.menu-open .close-icon {
+      display: block;
+    }
+  }
+
+  @media (max-width: 560px) {
+    .site-header {
+      padding-top: 10px;
+    }
+
+    .header-shell {
+      height: 58px;
+      padding-left: 15px;
+    }
+
+    .brand-mark {
+      width: 24px;
+      height: 24px;
+    }
+
+    .brand-mark svg {
+      width: 17px;
+      height: 17px;
+    }
+
+    .brand-word {
+      font-size: 0.96rem;
+    }
+
+    .header-actions {
+      margin-left: 0.25rem;
+    }
+
+    .icon-button {
+      width: 35px;
+      height: 35px;
+    }
+
+    .mobile-nav {
+      border-radius: 20px;
+    }
+  }
+</style>
+
+<script>
+  const root = document.documentElement;
+  const header = document.querySelector<HTMLElement>('[data-site-header]');
+  const menuButton = document.querySelector<HTMLButtonElement>('[data-menu-toggle]');
+  const mobileNav = document.querySelector<HTMLElement>('#mobile-navigation');
+
+  const syncThemeLabel = () => {
+    const isDark = root.dataset.theme === 'dark';
+    document.querySelectorAll<HTMLButtonElement>('[data-theme-toggle]').forEach((button) => {
+      button.setAttribute('aria-label', isDark ? '切换到浅色模式' : '切换到深色模式');
+    });
+  };
+
+  const closeMenu = () => {
+    if (!header || !menuButton || !mobileNav) return;
+    header.classList.remove('menu-open');
+    mobileNav.hidden = true;
+    menuButton.setAttribute('aria-expanded', 'false');
+    menuButton.setAttribute('aria-label', '打开菜单');
+  };
+
+  document.querySelectorAll<HTMLButtonElement>('[data-theme-toggle]').forEach((button) => {
+    button.addEventListener('click', () => {
+      const nextTheme = root.dataset.theme === 'dark' ? 'light' : 'dark';
+      root.dataset.theme = nextTheme;
+      try {
+        localStorage.setItem('theme', nextTheme);
+      } catch {
+        // Theme still works for this session when storage is unavailable.
+      }
+      syncThemeLabel();
+    });
+  });
+
+  syncThemeLabel();
+
+  menuButton?.addEventListener('click', () => {
+    if (!header || !mobileNav) return;
+    const isOpen = !mobileNav.hidden;
+    header.classList.toggle('menu-open', !isOpen);
+    mobileNav.hidden = isOpen;
+    menuButton.setAttribute('aria-expanded', String(!isOpen));
+    menuButton.setAttribute('aria-label', isOpen ? '打开菜单' : '关闭菜单');
+  });
+
+  mobileNav?.querySelectorAll('a').forEach((link) => {
+    link.addEventListener('click', closeMenu);
+  });
+
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape') closeMenu();
+  });
+
+  document.addEventListener('click', (event) => {
+    if (!header || !mobileNav || mobileNav.hidden) return;
+    if (event.target instanceof Node && header.contains(event.target)) return;
+    closeMenu();
+  });
+
+  window.addEventListener('resize', () => {
+    if (window.innerWidth > 860) closeMenu();
+  });
+
+  const setHeaderState = () => {
+    header?.classList.toggle('is-scrolled', window.scrollY > 20);
+  };
+
+  setHeaderState();
+  window.addEventListener('scroll', setHeaderState, { passive: true });
+</script>

@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://sqg1g.github.io/sitemap-index.xml

@@ -1,0 +1,820 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { SITE } from '../config';
+import type { WritingEntry } from '../lib/content';
+import { NOTE_STATUS, entryHref, formatDate, getReadingTime, tagHref } from '../lib/content';
+
+interface Heading {
+  depth: number;
+  slug: string;
+  text: string;
+}
+
+interface Props {
+  entry: WritingEntry;
+  headings: Heading[];
+  previous?: WritingEntry;
+  next?: WritingEntry;
+}
+
+const { entry, headings, previous, next } = Astro.props;
+const isNote = entry.collection === 'notes';
+const noteStatus = isNote ? NOTE_STATUS[entry.data.status] : null;
+const href = entryHref(entry);
+const readingTime = getReadingTime(entry.body);
+const toc = headings.filter((heading) => heading.depth === 2 || heading.depth === 3);
+
+const rawFilePath = entry.filePath?.replaceAll('\\', '/') ?? '';
+const filePath =
+  rawFilePath.match(/src\/content\/.*$/)?.[0] ??
+  `src/content/${entry.collection}/${entry.id}${/\.(md|mdx)$/i.test(entry.id) ? '' : '.md'}`;
+const editUrl = `${SITE.repo}/edit/main/${filePath}`;
+const articleUrl = new URL(href, SITE.url).href;
+
+const articleSchema = {
+  '@context': 'https://schema.org',
+  '@type': isNote ? 'TechArticle' : 'BlogPosting',
+  headline: entry.data.title,
+  description: entry.data.description,
+  datePublished: entry.data.date.toISOString(),
+  dateModified: (entry.data.updated ?? entry.data.date).toISOString(),
+  inLanguage: SITE.locale,
+  url: articleUrl,
+  mainEntityOfPage: articleUrl,
+  keywords: entry.data.tags.join(', '),
+  author: {
+    '@type': 'Person',
+    name: SITE.author.name,
+    url: SITE.github,
+  },
+  publisher: {
+    '@type': 'Person',
+    name: SITE.author.name,
+    url: SITE.github,
+  },
+};
+
+const pagerLabel = isNote ? '笔记' : '文章';
+---
+
+<BaseLayout
+  title={entry.data.title}
+  description={entry.data.description}
+  type="article"
+  publishedTime={entry.data.date}
+  updatedTime={entry.data.updated}
+  tags={[...entry.data.tags]}
+>
+  <script
+    type="application/ld+json"
+    is:inline
+    slot="head"
+    set:html={JSON.stringify(articleSchema)}
+  />
+  <div class="reading-progress" aria-hidden="true">
+    <span data-reading-progress></span>
+  </div>
+
+  <article class:list={['article', { 'article--note': isNote }]}>
+    <header class="article-hero container page-enter">
+      <nav class="breadcrumbs" aria-label="面包屑">
+        <a href="/">首页</a>
+        <span aria-hidden="true">/</span>
+        <a href={isNote ? '/notes/' : '/posts/'}>{pagerLabel}</a>
+        <span aria-hidden="true">/</span>
+        <span aria-current="page">正文</span>
+      </nav>
+
+      <div class="article-kicker">
+        <span class="article-kind">{isNote ? 'NOTE' : 'ESSAY'}</span>
+        {noteStatus && (
+          <span class="note-status" title={noteStatus.description}>
+            <span class="note-status__dot" aria-hidden="true"></span>
+            {noteStatus.label}
+          </span>
+        )}
+        <span class="article-date">{formatDate(entry.data.date)}</span>
+      </div>
+
+      <h1>{entry.data.title}</h1>
+      <p class="article-deck">{entry.data.description}</p>
+
+      <div class="article-meta">
+        <span>{readingTime} 分钟阅读</span>
+        <span class="meta-dot" aria-hidden="true"></span>
+        <span>{entry.data.tags.length ? `关于 ${entry.data.tags.join('、')}` : '随笔'}</span>
+        {entry.data.updated && (
+          <>
+            <span class="meta-dot" aria-hidden="true"></span>
+            <span>更新于 {formatDate(entry.data.updated)}</span>
+          </>
+        )}
+      </div>
+
+      {entry.data.tags.length > 0 && (
+        <ul class="article-tags" aria-label="文章标签">
+          {entry.data.tags.map((tag) => (
+            <li>
+              <a class="tag" href={tagHref(tag)}>
+                #{tag}
+              </a>
+            </li>
+          ))}
+        </ul>
+      )}
+    </header>
+
+    <div class="container article-layout">
+      <div class="article-main">
+        {toc.length > 0 && (
+          <details class="mobile-toc">
+            <summary>
+              本页目录
+              <span>{toc.length} 节</span>
+            </summary>
+            <nav aria-label="本页目录">
+              <ol>
+                {toc.map((heading) => (
+                  <li class:list={['toc-depth', `toc-depth--${heading.depth}`]}>
+                    <a href={`#${heading.slug}`}>{heading.text}</a>
+                  </li>
+                ))}
+              </ol>
+            </nav>
+          </details>
+        )}
+
+        <div class="prose" data-article-body>
+          <slot />
+        </div>
+
+        <footer class="article-footer">
+          <div class="article-footer__top">
+            <p>
+              写于 {formatDate(entry.data.date)}。如果这篇内容对你有帮助，或者你有不同的想法，欢迎在
+              <a href={SITE.github} target="_blank" rel="noreferrer">
+                GitHub
+              </a>{' '}
+              找我聊聊。
+            </p>
+            <a class="edit-link" href={editUrl} target="_blank" rel="noreferrer">
+              <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <path
+                  d="m14.7 5.3 4 4M4 20l1-4.2L16.6 4.2a2 2 0 0 1 2.8 0l.4.4a2 2 0 0 1 0 2.8L8.2 19 4 20Z"
+                  stroke="currentColor"
+                  stroke-width="1.7"
+                  stroke-linejoin="round"
+                ></path>
+              </svg>
+              在 GitHub 上编辑这一页
+            </a>
+          </div>
+
+          <div class="author-card">
+            <span class="author-avatar" aria-hidden="true">
+              <svg viewBox="0 0 32 32" fill="none">
+                <circle cx="16" cy="16" r="5.8" fill="currentColor"></circle>
+                <path
+                  d="M16 3v4M16 25v4M3 16h4M25 16h4M6.8 6.8l2.8 2.8M22.4 22.4l2.8 2.8M25.2 6.8l-2.8 2.8M9.6 22.4l-2.8 2.8"
+                  stroke="currentColor"
+                  stroke-width="1.7"
+                  stroke-linecap="round"
+                ></path>
+              </svg>
+            </span>
+            <div>
+              <p class="author-name">{SITE.author.name}</p>
+              <p class="author-bio">{SITE.author.intro}</p>
+            </div>
+            <a class="author-link" href={SITE.github} target="_blank" rel="noreferrer">
+              GitHub ↗
+            </a>
+          </div>
+
+          {(previous || next) && (
+            <nav class="pager" aria-label="前后篇">
+              {previous ? (
+                <a class="pager-card" href={entryHref(previous)}>
+                  <span class="pager-label">← 上一篇</span>
+                  <span class="pager-title">{previous.data.title}</span>
+                </a>
+              ) : (
+                <span class="pager-card pager-card--empty" aria-hidden="true"></span>
+              )}
+              {next ? (
+                <a class="pager-card pager-card--next" href={entryHref(next)}>
+                  <span class="pager-label">下一篇 →</span>
+                  <span class="pager-title">{next.data.title}</span>
+                </a>
+              ) : (
+                <span class="pager-card pager-card--empty" aria-hidden="true"></span>
+              )}
+            </nav>
+          )}
+        </footer>
+      </div>
+
+      {toc.length > 0 && (
+        <aside class="toc" aria-label="本页目录" data-toc>
+          <p class="toc-label">ON THIS PAGE</p>
+          <nav>
+            <ol>
+              {toc.map((heading) => (
+                <li class:list={['toc-depth', `toc-depth--${heading.depth}`]}>
+                  <a href={`#${heading.slug}`}>{heading.text}</a>
+                </li>
+              ))}
+            </ol>
+          </nav>
+          <a class="toc-top" href="#top">
+            回到顶部 ↑
+          </a>
+        </aside>
+      )}
+    </div>
+  </article>
+</BaseLayout>
+
+<style>
+  .reading-progress {
+    position: fixed;
+    z-index: 80;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    background: transparent;
+    pointer-events: none;
+  }
+
+  .reading-progress span {
+    display: block;
+    width: 100%;
+    height: 100%;
+    background: var(--accent);
+    transform: scaleX(0);
+    transform-origin: left center;
+  }
+
+  .article-hero {
+    padding-block: 1rem clamp(2.4rem, 5vw, 4rem);
+  }
+
+  .breadcrumbs {
+    display: flex;
+    gap: 0.45rem;
+    align-items: center;
+    color: var(--muted);
+    font-size: 0.7rem;
+    font-weight: 600;
+  }
+
+  .breadcrumbs a {
+    color: var(--muted);
+    text-decoration: none;
+    transition: color 150ms ease;
+  }
+
+  .breadcrumbs a:hover {
+    color: var(--accent);
+  }
+
+  .breadcrumbs span[aria-current='page'] {
+    color: var(--ink-soft);
+  }
+
+  .article-kicker {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.65rem;
+    align-items: center;
+    margin-top: clamp(1.6rem, 4vw, 2.8rem);
+  }
+
+  .article-kind {
+    padding: 0.3rem 0.55rem;
+    border: 1px solid var(--line-strong);
+    border-radius: 5px;
+    color: var(--ink-soft);
+    font-family: var(--font-mono);
+    font-size: 0.62rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+  }
+
+  .article-date {
+    color: var(--muted);
+    font-size: 0.73rem;
+    font-weight: 600;
+  }
+
+  .note-status {
+    display: inline-flex;
+    gap: 0.35rem;
+    align-items: center;
+    padding: 0.26rem 0.6rem;
+    border-radius: 999px;
+    background: var(--moss-soft);
+    color: var(--moss);
+    font-size: 0.68rem;
+    font-weight: 700;
+  }
+
+  .note-status__dot {
+    width: 0.38rem;
+    height: 0.38rem;
+    border-radius: 50%;
+    background: currentColor;
+  }
+
+  .article-hero h1 {
+    max-width: 18ch;
+    margin-top: 1.1rem;
+    font-size: clamp(2.55rem, 6.2vw, 5.2rem);
+    font-weight: 760;
+    line-height: 1.02;
+    letter-spacing: -0.065em;
+    text-wrap: balance;
+  }
+
+  .article--note .article-hero h1 {
+    font-family: var(--font-display);
+    font-weight: 500;
+    letter-spacing: -0.045em;
+  }
+
+  .article-deck {
+    max-width: 60ch;
+    margin-top: 1.4rem;
+    color: var(--ink-soft);
+    font-size: clamp(1rem, 1.3vw, 1.12rem);
+    line-height: 1.8;
+  }
+
+  .article-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.55rem;
+    align-items: center;
+    margin-top: 1.6rem;
+    color: var(--muted);
+    font-size: 0.73rem;
+    font-weight: 600;
+  }
+
+  .article-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    margin-top: 1.25rem;
+    list-style: none;
+  }
+
+  .article-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 760px) 230px;
+    gap: clamp(3rem, 6vw, 5rem);
+    align-items: start;
+    justify-content: space-between;
+    padding-bottom: clamp(4rem, 8vw, 7rem);
+  }
+
+  .article-main {
+    min-width: 0;
+    padding-top: clamp(2rem, 4vw, 3rem);
+    border-top: 1px solid var(--line);
+  }
+
+  .mobile-toc {
+    padding: 0.1rem 0 1.2rem;
+    border-bottom: 1px solid var(--line);
+    margin-bottom: 1.8rem;
+  }
+
+  .mobile-toc summary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    color: var(--ink);
+    font-size: 0.8rem;
+    font-weight: 700;
+    cursor: pointer;
+    list-style: none;
+  }
+
+  .mobile-toc summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .mobile-toc summary::after {
+    color: var(--accent);
+    content: '+';
+    font-size: 1rem;
+  }
+
+  .mobile-toc[open] summary::after {
+    content: '−';
+  }
+
+  .mobile-toc summary span {
+    margin-left: auto;
+    margin-right: 0.7rem;
+    color: var(--muted);
+    font-size: 0.65rem;
+    font-weight: 500;
+  }
+
+  .mobile-toc nav {
+    padding-top: 0.8rem;
+  }
+
+  .toc {
+    position: sticky;
+    top: 7.2rem;
+    max-height: calc(100vh - 9rem);
+    padding-left: 1.15rem;
+    border-left: 1px solid var(--line);
+    margin-top: clamp(2rem, 4vw, 3rem);
+    overflow-y: auto;
+  }
+
+  .toc-label {
+    margin-bottom: 1rem;
+    color: var(--muted);
+    font-size: 0.61rem;
+    font-weight: 750;
+    letter-spacing: 0.15em;
+  }
+
+  .toc ol,
+  .mobile-toc ol {
+    display: grid;
+    gap: 0.18rem;
+    list-style: none;
+  }
+
+  .toc a,
+  .mobile-toc nav a {
+    display: block;
+    padding: 0.28rem 0;
+    color: var(--muted);
+    font-size: 0.73rem;
+    line-height: 1.5;
+    text-decoration: none;
+    transition:
+      color 150ms ease,
+      transform 150ms var(--ease-out);
+  }
+
+  .toc a:hover,
+  .mobile-toc nav a:hover,
+  .toc a.is-active {
+    color: var(--ink);
+  }
+
+  .toc a.is-active {
+    font-weight: 650;
+    transform: translateX(2px);
+  }
+
+  .toc .toc-depth--3,
+  .mobile-toc .toc-depth--3 {
+    padding-left: 0.9rem;
+  }
+
+  .toc-top {
+    display: inline-block;
+    margin-top: 1.3rem;
+    color: var(--muted);
+    font-size: 0.68rem;
+    font-weight: 650;
+    text-decoration: none;
+  }
+
+  .toc-top:hover {
+    color: var(--accent);
+  }
+
+  .article-footer {
+    padding-top: 2.5rem;
+    border-top: 1px solid var(--line);
+    margin-top: 3.8rem;
+  }
+
+  .article-footer__top {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem 2rem;
+    align-items: flex-start;
+    justify-content: space-between;
+    color: var(--muted);
+    font-size: 0.78rem;
+    line-height: 1.8;
+  }
+
+  .article-footer__top p {
+    max-width: 46ch;
+  }
+
+  .article-footer__top a {
+    color: var(--ink);
+    text-decoration-color: var(--accent);
+    text-underline-offset: 0.18em;
+  }
+
+  .edit-link {
+    display: inline-flex;
+    gap: 0.35rem;
+    align-items: center;
+    color: var(--muted) !important;
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-decoration: none !important;
+    white-space: nowrap;
+  }
+
+  .edit-link:hover {
+    color: var(--accent) !important;
+  }
+
+  .edit-link svg {
+    width: 0.95rem;
+    height: 0.95rem;
+  }
+
+  .author-card {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    gap: 1rem;
+    align-items: center;
+    padding: 1.2rem;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-md);
+    margin-top: 2.2rem;
+    background: var(--accent-wash);
+  }
+
+  .author-avatar {
+    display: grid;
+    width: 2.8rem;
+    height: 2.8rem;
+    border-radius: 50%;
+    background: var(--accent);
+    color: #fff8ee;
+    place-items: center;
+  }
+
+  .author-avatar svg {
+    width: 1.8rem;
+    height: 1.8rem;
+  }
+
+  .author-name {
+    color: var(--ink);
+    font-size: 0.88rem;
+    font-weight: 750;
+  }
+
+  .author-bio {
+    margin-top: 0.15rem;
+    color: var(--muted);
+    font-size: 0.74rem;
+    line-height: 1.6;
+  }
+
+  .author-link {
+    color: var(--ink-soft);
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-decoration: none;
+    white-space: nowrap;
+  }
+
+  .author-link:hover {
+    color: var(--accent);
+  }
+
+  .pager {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.75rem;
+    margin-top: 2rem;
+  }
+
+  .pager-card {
+    display: flex;
+    min-height: 108px;
+    flex-direction: column;
+    gap: 0.55rem;
+    justify-content: space-between;
+    padding: 1rem 1.1rem;
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    color: var(--ink);
+    text-decoration: none;
+    transition:
+      border-color 180ms ease,
+      background-color 180ms ease,
+      transform 180ms var(--ease-out);
+  }
+
+  .pager-card:hover {
+    border-color: var(--line-strong);
+    background: var(--surface-soft);
+    transform: translateY(-2px);
+  }
+
+  .pager-card--next {
+    text-align: right;
+  }
+
+  .pager-card--empty {
+    border-color: transparent;
+    background: transparent;
+  }
+
+  .pager-label {
+    color: var(--muted);
+    font-size: 0.67rem;
+    font-weight: 650;
+  }
+
+  .pager-title {
+    font-size: 0.84rem;
+    font-weight: 700;
+    line-height: 1.45;
+  }
+
+  @media (max-width: 960px) {
+    .article-layout {
+      grid-template-columns: minmax(0, 760px);
+      justify-content: center;
+    }
+
+    .toc {
+      display: none;
+    }
+  }
+
+  @media (min-width: 961px) {
+    .mobile-toc {
+      display: none;
+    }
+  }
+
+  @media (max-width: 640px) {
+    .article-hero {
+      padding-top: 0;
+    }
+
+    .article-hero h1 {
+      font-size: clamp(2.2rem, 10vw, 3.5rem);
+    }
+
+    .article-deck {
+      margin-top: 1rem;
+      font-size: 0.96rem;
+    }
+
+    .article-meta {
+      margin-top: 1.2rem;
+      line-height: 1.8;
+    }
+
+    .author-card {
+      grid-template-columns: auto minmax(0, 1fr);
+    }
+
+    .author-link {
+      display: none;
+    }
+
+    .pager {
+      grid-template-columns: 1fr;
+    }
+
+    .pager-card {
+      min-height: 92px;
+    }
+
+    .pager-card--next {
+      text-align: left;
+    }
+
+    .pager-card--empty {
+      display: none;
+    }
+  }
+
+  @media print {
+    .reading-progress,
+    .toc,
+    .mobile-toc,
+    .author-card,
+    .pager,
+    .article-footer__top,
+    .breadcrumbs {
+      display: none !important;
+    }
+
+    .article-layout {
+      display: block;
+      padding: 0;
+    }
+
+    .article-main {
+      border: 0;
+    }
+  }
+</style>
+
+<script>
+  const progressBar = document.querySelector<HTMLElement>('[data-reading-progress]');
+  const articleBody = document.querySelector<HTMLElement>('[data-article-body]');
+
+  const updateProgress = () => {
+    if (!progressBar || !articleBody) return;
+
+    const articleTop = articleBody.getBoundingClientRect().top + window.scrollY;
+    const articleHeight = articleBody.offsetHeight;
+    const start = articleTop - 100;
+    const end = articleTop + articleHeight - window.innerHeight + 220;
+    const ratio = (window.scrollY - start) / Math.max(1, end - start);
+    progressBar.style.transform = `scaleX(${Math.min(1, Math.max(0, ratio))})`;
+  };
+
+  updateProgress();
+  window.addEventListener('scroll', updateProgress, { passive: true });
+  window.addEventListener('resize', updateProgress);
+
+  document.querySelectorAll<HTMLElement>('.prose h2[id], .prose h3[id]').forEach((heading) => {
+    const anchor = document.createElement('a');
+    anchor.className = 'heading-anchor';
+    anchor.href = `#${heading.id}`;
+    anchor.textContent = '#';
+    anchor.setAttribute('aria-label', '复制此标题的链接');
+    anchor.addEventListener('click', () => {
+      history.replaceState(null, '', `#${heading.id}`);
+    });
+    heading.prepend(anchor);
+  });
+
+  document.querySelectorAll<HTMLElement>('.prose pre').forEach((pre) => {
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.dataset.codeCopy = '';
+    button.textContent = '复制';
+    button.setAttribute('aria-label', '复制代码');
+    pre.append(button);
+
+    button.addEventListener('click', async () => {
+      const code = pre.querySelector('code')?.innerText ?? pre.innerText;
+      try {
+        await navigator.clipboard.writeText(code);
+        button.textContent = '已复制';
+        window.setTimeout(() => {
+          button.textContent = '复制';
+        }, 1600);
+      } catch {
+        button.textContent = '复制失败';
+        window.setTimeout(() => {
+          button.textContent = '复制';
+        }, 1600);
+      }
+    });
+  });
+
+  document.querySelectorAll<HTMLAnchorElement>('.prose a[href^="http"]').forEach((link) => {
+    try {
+      if (new URL(link.href).hostname !== window.location.hostname) {
+        link.target = '_blank';
+        link.rel = 'noreferrer noopener';
+      }
+    } catch {
+      // Leave malformed links alone.
+    }
+  });
+
+  const tocLinks = [...document.querySelectorAll<HTMLAnchorElement>('[data-toc] a')];
+  const tocTargets = tocLinks
+    .map((link) => {
+      const target = document.getElementById(decodeURIComponent(link.hash.slice(1)));
+      return target ? { link, target } : null;
+    })
+    .filter((entry): entry is { link: HTMLAnchorElement; target: HTMLElement } => Boolean(entry));
+
+  const updateActiveToc = () => {
+    if (!tocTargets.length) return;
+
+    let active = tocTargets[0];
+    for (const entry of tocTargets) {
+      if (entry.target.getBoundingClientRect().top <= 150) active = entry;
+    }
+
+    tocLinks.forEach((link) => link.classList.remove('is-active'));
+    active?.link.classList.add('is-active');
+  };
+
+  updateActiveToc();
+  window.addEventListener('scroll', updateActiveToc, { passive: true });
+</script>
