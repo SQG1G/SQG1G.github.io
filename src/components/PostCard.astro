@@ -4,31 +4,23 @@ import { formatDate, getReadingTime, postHref } from '../lib/content';
 
 interface Props {
   entry: PostEntry;
-  index?: number;
   featured?: boolean;
 }
 
-const { entry, index = 0, featured = false } = Astro.props;
+const { entry, featured = false } = Astro.props;
 const href = postHref(entry);
 const readingTime = getReadingTime(entry.body);
 const visibleTags = entry.data.tags.slice(0, 3);
-const indexLabel = String(index + 1).padStart(2, '0');
 ---
 
-<article
-  class:list={['post-card', { 'post-card--featured': featured }]}
-  style={`--card-delay: ${Math.min(index, 5) * 70}ms`}
->
-  <a class="post-card__link" href={href} aria-label={`阅读文章：${entry.data.title}`}>
-    <div class="post-card__top">
-      <div class="meta-line">
-        <time datetime={entry.data.date.toISOString()}>{formatDate(entry.data.date)}</time>
-        <span class="meta-dot" aria-hidden="true"></span>
-        <span>{readingTime} 分钟阅读</span>
-      </div>
-      <span class="post-card__index" aria-hidden="true">
-        {indexLabel}
-      </span>
+<article class:list={['post-card', { 'post-card--featured': featured }]}>
+  <a class="post-card__link" href={href}>
+    <div class="post-card__meta">
+      <span>{featured ? '最新文章' : '文章'}</span>
+      <span class="post-card__dot" aria-hidden="true"></span>
+      <time datetime={entry.data.date.toISOString()}>{formatDate(entry.data.date)}</time>
+      <span class="post-card__dot" aria-hidden="true"></span>
+      <span>{readingTime} 分钟阅读</span>
     </div>
 
     <div class="post-card__body">
@@ -37,24 +29,17 @@ const indexLabel = String(index + 1).padStart(2, '0');
     </div>
 
     <div class="post-card__footer">
-      <ul class="tag-list" aria-label="标签">
-        {visibleTags.map((tag) => (
-          <li>
-            <span class="tag">{tag}</span>
-          </li>
-        ))}
-      </ul>
-      <span class="post-card__cta" aria-hidden="true">
-        阅读
-        <svg viewBox="0 0 24 24" fill="none">
-          <path
-            d="M5 12h13M13 6l6 6-6 6"
-            stroke="currentColor"
-            stroke-width="1.8"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-          ></path>
-        </svg>
+      {visibleTags.length > 0 && (
+        <ul class="tag-list" aria-label="标签">
+          {visibleTags.map((tag) => (
+            <li>
+              <span class="tag">{tag}</span>
+            </li>
+          ))}
+        </ul>
+      )}
+      <span class="post-card__cta">
+        阅读全文 <span aria-hidden="true">›</span>
       </span>
     </div>
   </a>
@@ -62,189 +47,151 @@ const indexLabel = String(index + 1).padStart(2, '0');
 
 <style>
   .post-card {
-    position: relative;
-    border: 1px solid var(--line);
-    border-radius: var(--radius-lg);
-    background: color-mix(in srgb, var(--surface) 78%, transparent);
-    box-shadow: var(--shadow-sm);
-    overflow: hidden;
-    animation: card-in 700ms var(--ease-out) both;
-    animation-delay: var(--card-delay, 0ms);
-    transition:
-      border-color 200ms ease,
-      box-shadow 200ms ease,
-      transform 240ms var(--ease-out);
-  }
-
-  .post-card::before {
-    position: absolute;
-    top: -30%;
-    right: -25%;
-    width: 12rem;
-    height: 12rem;
-    border-radius: 50%;
-    background: radial-gradient(circle, var(--accent-soft), transparent 68%);
-    content: '';
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity 300ms ease;
+    height: 100%;
+    border-radius: var(--radius);
+    background: var(--bg-secondary);
+    transition: background-color 200ms var(--ease);
   }
 
   .post-card:hover {
-    border-color: color-mix(in srgb, var(--accent) 35%, var(--line));
-    box-shadow: var(--shadow-md);
-    transform: translateY(-4px);
-  }
-
-  .post-card:hover::before {
-    opacity: 0.85;
+    background: #ececf0;
   }
 
   .post-card__link {
-    position: relative;
-    z-index: 1;
     display: flex;
     height: 100%;
+    min-height: 320px;
     flex-direction: column;
-    gap: 2.4rem;
     justify-content: space-between;
-    padding: clamp(1.35rem, 2.6vw, 2rem);
+    padding: clamp(28px, 3vw, 36px);
     color: var(--ink);
     text-decoration: none;
   }
 
-  .post-card__top {
+  .post-card__meta {
     display: flex;
-    gap: 1rem;
-    align-items: flex-start;
-    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: center;
+    color: var(--ink-secondary);
+    font-size: 12px;
+    line-height: 1.4;
   }
 
-  .post-card__index {
-    color: var(--line-strong);
-    font-family: var(--font-display);
-    font-size: 1.25rem;
-    font-style: italic;
-    line-height: 1;
-    transition: color 200ms ease;
+  .post-card__dot {
+    width: 3px;
+    height: 3px;
+    border-radius: 50%;
+    background: var(--ink-tertiary);
   }
 
-  .post-card:hover .post-card__index {
-    color: var(--accent);
+  .post-card__body {
+    margin-block: 52px;
   }
 
   .post-card__body h3 {
-    max-width: 100%;
-    font-size: clamp(1.4rem, 2vw, 1.8rem);
-    line-height: 1.22;
-    letter-spacing: -0.045em;
-    transition: color 180ms ease;
+    max-width: 24ch;
+    color: var(--ink);
+    font-size: clamp(24px, 2.4vw, 28px);
+    font-weight: 600;
+    line-height: 1.15;
+    letter-spacing: -0.03em;
   }
 
   .post-card__body p {
-    max-width: 46ch;
-    margin-top: 0.7rem;
-    color: var(--muted);
-    font-size: 0.84rem;
-    line-height: 1.75;
+    max-width: 58ch;
+    margin-top: 12px;
+    color: var(--ink-secondary);
+    font-size: 17px;
+    line-height: 1.5;
   }
 
   .post-card__footer {
     display: flex;
-    gap: 1rem;
-    align-items: center;
+    gap: 20px;
+    align-items: flex-end;
     justify-content: space-between;
   }
 
-  .post-card__footer .tag {
-    background: color-mix(in srgb, var(--bg) 70%, transparent);
-  }
-
   .post-card__cta {
-    display: inline-flex;
-    gap: 0.35rem;
-    align-items: center;
-    color: var(--muted);
-    font-size: 0.72rem;
-    font-weight: 700;
-    white-space: nowrap;
-    transition: color 180ms ease;
-  }
-
-  .post-card__cta svg {
-    width: 0.95rem;
-    height: 0.95rem;
-    transition: transform 180ms var(--ease-out);
+    flex: none;
+    color: var(--blue);
+    font-size: 17px;
+    line-height: 1.2;
+    transition: color 160ms ease;
   }
 
   .post-card:hover .post-card__cta {
-    color: var(--accent);
-  }
-
-  .post-card:hover .post-card__cta svg {
-    transform: translateX(3px);
+    color: var(--blue-hover);
+    text-decoration: underline;
+    text-underline-offset: 3px;
   }
 
   .post-card--featured {
-    background: linear-gradient(
-      145deg,
-      color-mix(in srgb, var(--accent-soft) 72%, var(--surface)),
-      var(--surface) 72%
-    );
+    background: var(--bg-secondary);
   }
 
   .post-card--featured .post-card__link {
-    gap: clamp(3rem, 7vw, 5.6rem);
-    padding: clamp(1.5rem, 3.4vw, 2.8rem);
+    min-height: 420px;
+    padding: clamp(36px, 6vw, 72px);
+  }
+
+  .post-card--featured .post-card__body {
+    margin-block: 72px;
   }
 
   .post-card--featured .post-card__body h3 {
-    max-width: 100%;
-    font-family: var(--font-display);
-    font-size: clamp(2.2rem, 4.4vw, 3.7rem);
-    font-weight: 500;
-    line-height: 0.98;
-    letter-spacing: -0.055em;
+    max-width: 22ch;
+    font-size: clamp(34px, 4.6vw, 56px);
+    line-height: 1.06;
+    letter-spacing: -0.038em;
   }
 
   .post-card--featured .post-card__body p {
-    max-width: 40ch;
-    color: var(--ink-soft);
-    font-size: 0.9rem;
+    max-width: 52ch;
+    font-size: 21px;
+    line-height: 1.48;
   }
 
-  .post-card--featured .post-card__index {
-    font-size: 2rem;
-    color: var(--accent);
-    opacity: 0.55;
-  }
-
-  @keyframes card-in {
-    from {
-      opacity: 0;
-      transform: translateY(16px);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
-  }
-
-  @media (max-width: 600px) {
+  @media (max-width: 734px) {
     .post-card__link {
-      gap: 2rem;
+      min-height: 280px;
+      padding: 24px;
     }
 
-    .post-card__footer {
-      align-items: flex-end;
+    .post-card__body {
+      margin-block: 40px;
     }
 
-    .post-card__cta {
-      display: none;
+    .post-card__body h3 {
+      font-size: 24px;
+    }
+
+    .post-card__body p {
+      font-size: 15px;
+    }
+
+    .post-card--featured .post-card__link {
+      min-height: 0;
+      padding: 28px 24px;
+    }
+
+    .post-card--featured .post-card__body {
+      margin-block: 48px;
     }
 
     .post-card--featured .post-card__body h3 {
-      font-size: clamp(2rem, 10vw, 2.7rem);
+      font-size: 36px;
+    }
+
+    .post-card--featured .post-card__body p {
+      font-size: 17px;
+    }
+
+    .post-card__footer {
+      align-items: flex-start;
+      flex-direction: column;
+      gap: 20px;
     }
   }
 </style>

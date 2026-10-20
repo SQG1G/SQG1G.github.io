@@ -4,23 +4,23 @@ import { NOTE_STATUS, formatDate, getReadingTime, noteHref } from '../lib/conten
 
 interface Props {
   entry: NoteEntry;
-  index?: number;
+  dark?: boolean;
 }
 
-const { entry, index = 0 } = Astro.props;
+const { entry, dark = false } = Astro.props;
 const href = noteHref(entry);
 const readingTime = getReadingTime(entry.body);
 const status = NOTE_STATUS[entry.data.status];
 ---
 
-<article
-  class={`note-card note-card--${entry.data.status}`}
-  style={`--card-delay: ${Math.min(index, 5) * 70}ms`}
->
-  <a class="note-card__link" href={href} aria-label={`阅读笔记：${entry.data.title}`}>
-    <div class="note-card__head">
+<article class:list={['note-card', { 'note-card--dark': dark }]}>
+  <a class="note-card__link" href={href}>
+    <div class="note-card__meta">
       <span class="note-card__status">
-        <span class="note-card__dot" aria-hidden="true"></span>
+        <span
+          class:list={['note-card__dot', `note-card__dot--${entry.data.status}`]}
+          aria-hidden="true"
+        ></span>
         {status.label}
       </span>
       <time datetime={entry.data.date.toISOString()}>{formatDate(entry.data.date)}</time>
@@ -31,10 +31,10 @@ const status = NOTE_STATUS[entry.data.status];
       <p>{entry.data.description}</p>
     </div>
 
-    <div class="note-card__foot">
-      <span>{readingTime} 分钟</span>
-      <span class="note-card__arrow" aria-hidden="true">
-        ↗
+    <div class="note-card__footer">
+      <span>{readingTime} 分钟阅读</span>
+      <span class="note-card__cta">
+        阅读 <span aria-hidden="true">›</span>
       </span>
     </div>
   </a>
@@ -42,129 +42,148 @@ const status = NOTE_STATUS[entry.data.status];
 
 <style>
   .note-card {
-    position: relative;
-    border: 1px solid var(--line);
-    border-radius: var(--radius-md);
-    background: color-mix(in srgb, var(--surface) 74%, transparent);
-    box-shadow: var(--shadow-sm);
-    animation: note-in 650ms var(--ease-out) both;
-    animation-delay: var(--card-delay, 0ms);
-    transition:
-      border-color 200ms ease,
-      box-shadow 200ms ease,
-      transform 220ms var(--ease-out);
+    height: 100%;
+    border-radius: var(--radius);
+    background: var(--bg-secondary);
+    transition: background-color 200ms var(--ease);
   }
 
   .note-card:hover {
-    border-color: color-mix(in srgb, var(--moss) 55%, var(--line));
-    box-shadow: var(--shadow-md);
-    transform: translateY(-3px) rotate(-0.25deg);
+    background: #ececf0;
   }
 
   .note-card__link {
     display: flex;
     height: 100%;
-    min-height: 245px;
+    min-height: 300px;
     flex-direction: column;
-    padding: 1.35rem;
+    padding: clamp(24px, 2.8vw, 32px);
     color: var(--ink);
     text-decoration: none;
   }
 
-  .note-card__head {
+  .note-card__meta {
     display: flex;
-    gap: 1rem;
+    flex-wrap: wrap;
+    gap: 8px 12px;
     align-items: center;
     justify-content: space-between;
-    color: var(--muted);
-    font-size: 0.68rem;
-    font-weight: 600;
+    color: var(--ink-secondary);
+    font-size: 12px;
+    line-height: 1.4;
   }
 
   .note-card__status {
     display: inline-flex;
-    gap: 0.35rem;
+    gap: 7px;
     align-items: center;
-    color: var(--ink-soft);
+    color: var(--ink-secondary);
   }
 
   .note-card__dot {
-    width: 0.46rem;
-    height: 0.46rem;
+    width: 6px;
+    height: 6px;
     border-radius: 50%;
-    background: var(--gold);
-    box-shadow: 0 0 0 3px color-mix(in srgb, var(--gold) 18%, transparent);
+    background: var(--ink-tertiary);
   }
 
-  .note-card--growing .note-card__dot {
-    background: var(--moss);
-    box-shadow: 0 0 0 3px color-mix(in srgb, var(--moss) 18%, transparent);
+  .note-card__dot--seedling {
+    background: var(--orange);
   }
 
-  .note-card--evergreen .note-card__dot {
-    background: var(--accent);
-    box-shadow: 0 0 0 3px var(--accent-wash);
+  .note-card__dot--growing {
+    background: var(--green);
+  }
+
+  .note-card__dot--evergreen {
+    background: var(--blue);
   }
 
   .note-card__body {
     margin-block: auto;
-    padding-block: 2rem;
+    padding-block: 48px;
   }
 
   .note-card__body h3 {
-    max-width: 18ch;
-    font-size: clamp(1.2rem, 1.7vw, 1.5rem);
-    line-height: 1.28;
-    letter-spacing: -0.04em;
+    max-width: 20ch;
+    color: var(--ink);
+    font-size: clamp(22px, 2vw, 24px);
+    font-weight: 600;
+    line-height: 1.16;
+    letter-spacing: -0.03em;
   }
 
   .note-card__body p {
-    margin-top: 0.55rem;
-    color: var(--muted);
-    font-size: 0.8rem;
-    line-height: 1.7;
+    max-width: 40ch;
+    margin-top: 12px;
+    color: var(--ink-secondary);
+    font-size: 15px;
+    line-height: 1.55;
   }
 
-  .note-card__foot {
+  .note-card__footer {
     display: flex;
+    gap: 16px;
     align-items: center;
     justify-content: space-between;
-    color: var(--muted);
-    font-size: 0.66rem;
-    font-weight: 650;
+    color: var(--ink-secondary);
+    font-size: 12px;
+    line-height: 1.4;
   }
 
-  .note-card__arrow {
-    display: grid;
-    width: 1.8rem;
-    height: 1.8rem;
-    border: 1px solid var(--line);
-    border-radius: 50%;
-    color: var(--muted);
-    font-size: 0.8rem;
-    place-items: center;
-    transition:
-      background-color 180ms ease,
-      border-color 180ms ease,
-      color 180ms ease,
-      transform 180ms var(--ease-out);
+  .note-card__cta {
+    color: var(--blue);
+    font-size: 14px;
+    transition: color 160ms ease;
   }
 
-  .note-card:hover .note-card__arrow {
-    border-color: var(--ink);
-    background: var(--ink);
-    color: var(--bg);
-    transform: rotate(8deg);
+  .note-card:hover .note-card__cta {
+    color: var(--blue-hover);
+    text-decoration: underline;
+    text-underline-offset: 3px;
   }
 
-  @keyframes note-in {
-    from {
-      opacity: 0;
-      transform: translateY(14px);
+  .note-card--dark {
+    background: var(--dark-surface);
+  }
+
+  .note-card--dark:hover {
+    background: var(--dark-surface-hover);
+  }
+
+  .note-card--dark .note-card__link,
+  .note-card--dark .note-card__body h3 {
+    color: var(--dark-text);
+  }
+
+  .note-card--dark .note-card__meta,
+  .note-card--dark .note-card__status,
+  .note-card--dark .note-card__body p,
+  .note-card--dark .note-card__footer {
+    color: var(--dark-secondary);
+  }
+
+  .note-card--dark .note-card__cta {
+    color: var(--blue-on-dark);
+  }
+
+  .note-card--dark .tag {
+    background: #2c2c2e;
+    color: var(--dark-text);
+  }
+
+  @media (max-width: 734px) {
+    .note-card__link {
+      min-height: 240px;
+      padding: 24px;
     }
-    to {
-      opacity: 1;
-      transform: translateY(0);
+
+    .note-card__body {
+      padding-block: 36px;
+    }
+
+    .note-card__body h3 {
+      font-size: 22px;
     }
   }
 </style>

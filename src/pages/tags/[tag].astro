@@ -3,7 +3,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 import PageHeader from '../../components/PageHeader.astro';
 import PostCard from '../../components/PostCard.astro';
 import NoteCard from '../../components/NoteCard.astro';
-import { getWriting, tagHref } from '../../lib/content';
+import { getWriting } from '../../lib/content';
 
 export async function getStaticPaths() {
   const entries = await getWriting();
@@ -19,86 +19,64 @@ export async function getStaticPaths() {
 }
 
 const { tag, entries } = Astro.props;
-const countLabel = `${entries.length} 篇相关内容`;
 ---
 
-<BaseLayout title={`#${tag}`} description={`所有带有「${tag}」标签的文章和笔记。`}>
+<BaseLayout title={tag} description={`所有带有「${tag}」标签的文章和笔记。`}>
   <PageHeader
-    eyebrow="BROWSE BY TOPIC"
-    title="标签："
-    titleAccent={`#${tag}`}
-    description={`这里收集了所有与「${tag}」相关的内容，共 ${entries.length} 篇。`}
-    issue=""
-    countLabel={countLabel}
+    eyebrow="标签"
+    title={tag}
+    description={`这里收集了所有与「${tag}」相关的内容。`}
+    meta={`${entries.length} 篇相关内容`}
   />
 
-  <section class="container tag-archive" aria-label={`${tag} 标签下的内容`}>
-    <div class="tag-archive__top">
-      <a class="back-link" href="/tags/">
-        ← 全部标签
-      </a>
-      <a class="tag-pill" href={tagHref(tag)}>
-        #{tag}
-      </a>
-    </div>
+  <section class="section tag-archive" aria-label={`${tag} 标签下的内容`}>
+    <div class="container">
+      <div class="archive-bar">
+        <a class="text-link text-link--small" href="/tags/">
+          ← 全部标签
+        </a>
+        <span>按时间排序</span>
+      </div>
 
-    <div class="tag-archive__grid">
-      {entries.map((entry, index) =>
-        entry.collection === 'posts' ? (
-          <PostCard entry={entry} index={index} />
-        ) : (
-          <NoteCard entry={entry} index={index} />
-        ),
-      )}
+      <div class="archive-grid">
+        {entries.map((entry) =>
+          entry.collection === 'posts' ? <PostCard entry={entry} /> : <NoteCard entry={entry} />,
+        )}
+      </div>
     </div>
   </section>
 </BaseLayout>
 
 <style>
   .tag-archive {
-    padding-bottom: clamp(3rem, 7vw, 6rem);
+    padding-block: 48px 96px;
   }
 
-  .tag-archive__top {
+  .archive-bar {
     display: flex;
-    gap: 1rem;
+    gap: 20px;
     align-items: center;
     justify-content: space-between;
-    padding-block: 0.9rem;
-    border-top: 1px solid var(--line);
+    padding-bottom: 18px;
     border-bottom: 1px solid var(--line);
-    margin-bottom: 1.5rem;
+    color: var(--ink-tertiary);
+    font-size: 12px;
+    line-height: 1.4;
   }
 
-  .back-link {
-    color: var(--muted);
-    font-size: 0.73rem;
-    font-weight: 650;
-    text-decoration: none;
-  }
-
-  .back-link:hover {
-    color: var(--accent);
-  }
-
-  .tag-pill {
-    padding: 0.3rem 0.7rem;
-    border: 1px solid var(--line);
-    border-radius: 999px;
-    color: var(--ink-soft);
-    font-size: 0.7rem;
-    font-weight: 650;
-    text-decoration: none;
-  }
-
-  .tag-archive__grid {
+  .archive-grid {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 1rem;
+    gap: 16px;
+    margin-top: 24px;
   }
 
-  @media (max-width: 760px) {
-    .tag-archive__grid {
+  @media (max-width: 734px) {
+    .tag-archive {
+      padding-block: 36px 64px;
+    }
+
+    .archive-grid {
       grid-template-columns: 1fr;
     }
   }

@@ -52,14 +52,19 @@ draft: false
 
 ## 3. 链接不需要默认变蓝
 
-链接的默认蓝色会和整站的暖色调冲突。我用下划线表达「可点击」，用强调色表达悬停状态：
+链接如果只靠颜色区分，在长文里会不够稳定。我用下划线表达「可点击」，用蓝色表达悬停状态：
 
 ```css
 .prose a {
   color: var(--ink);
   text-decoration: underline;
-  text-decoration-color: var(--accent);
+  text-decoration-color: var(--line);
   text-underline-offset: 0.22em;
+}
+
+.prose a:hover {
+  color: var(--blue);
+  text-decoration-color: var(--blue);
 }
 ```
 
@@ -69,11 +74,11 @@ draft: false
 
 代码块内的读者不是在「读文章」，而是在「扫描结构」。所以它需要更大的对比度、更紧凑的行高，以及和正文明显不同的容器。
 
-我倾向让代码块始终保持深色，即使页面是浅色主题：
+我倾向让代码块始终保持深色：
 
 - 它像一个独立的工作台；
 - 与正文形成明确分区；
-- 不用维护两套高亮主题的细节。
+- 不用同时维护两套高亮样式。
 
 唯一要注意的是行内代码不要和正文抢戏，所以只保留浅背景和等宽字体，不加边框和阴影。
 

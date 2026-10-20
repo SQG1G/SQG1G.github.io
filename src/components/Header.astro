@@ -2,30 +2,16 @@
 import { SITE } from '../config';
 
 const pathname = Astro.url.pathname;
-
 const isActive = (href: string) => (href === '/' ? pathname === '/' : pathname.startsWith(href));
 ---
 
-<header class="site-header" data-site-header>
-  <div class="header-shell">
-    <a class="brand" href="/" aria-label={`${SITE.name} 首页`}>
-      <span class="brand-mark" aria-hidden="true">
-        <svg viewBox="0 0 32 32" fill="none">
-          <circle cx="16" cy="16" r="6.2" fill="currentColor"></circle>
-          <path
-            d="M16 2.8v4.1M16 25.1v4.1M2.8 16h4.1M25.1 16h4.1M6.7 6.7l2.9 2.9M22.4 22.4l2.9 2.9M25.3 6.7l-2.9 2.9M9.6 22.4l-2.9 2.9"
-            stroke="currentColor"
-            stroke-width="1.8"
-            stroke-linecap="round"
-          ></path>
-        </svg>
-      </span>
-      <span class="brand-word">
-        SQG1G<span class="brand-dot">.</span>
-      </span>
+<header class="global-nav" data-site-header>
+  <div class="global-nav__inner">
+    <a class="nav-brand" href="/" aria-label={`${SITE.name} 首页`}>
+      {SITE.name}
     </a>
 
-    <nav class="primary-nav" aria-label="主导航">
+    <nav class="nav-links" aria-label="主导航">
       {SITE.nav.map((item) => (
         <a
           class:list={['nav-link', { 'is-active': isActive(item.href) }]}
@@ -37,53 +23,27 @@ const isActive = (href: string) => (href === '/' ? pathname === '/' : pathname.s
       ))}
     </nav>
 
-    <div class="header-actions">
+    <div class="nav-actions">
       <button
-        class="icon-button search-open"
+        class="nav-icon-button"
         type="button"
         data-search-open
         aria-label="搜索文章和笔记"
         title="搜索（Ctrl / ⌘ + K）"
       >
         <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
-          <circle cx="10.8" cy="10.8" r="6.8" stroke="currentColor" stroke-width="1.8"></circle>
+          <circle cx="10.8" cy="10.8" r="6.5" stroke="currentColor" stroke-width="1.6"></circle>
           <path
-            d="m16 16 4.2 4.2"
+            d="m15.8 15.8 4.4 4.4"
             stroke="currentColor"
-            stroke-width="1.8"
+            stroke-width="1.6"
             stroke-linecap="round"
           ></path>
         </svg>
       </button>
 
       <button
-        class="icon-button theme-toggle"
-        type="button"
-        data-theme-toggle
-        aria-label="切换到深色模式"
-        title="切换明暗主题"
-      >
-        <svg data-theme-icon="light" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-          <path
-            d="M20.3 14.1A8.2 8.2 0 0 1 9.9 3.7 8.4 8.4 0 1 0 20.3 14.1Z"
-            stroke="currentColor"
-            stroke-width="1.8"
-            stroke-linejoin="round"
-          ></path>
-        </svg>
-        <svg data-theme-icon="dark" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-          <circle cx="12" cy="12" r="4.2" stroke="currentColor" stroke-width="1.8"></circle>
-          <path
-            d="M12 2.8v2.1M12 19.1v2.1M3.8 12h2.1M18.1 12h2.1M6.2 6.2l1.5 1.5M16.3 16.3l1.5 1.5M17.8 6.2l-1.5 1.5M7.7 16.3l-1.5 1.5"
-            stroke="currentColor"
-            stroke-width="1.8"
-            stroke-linecap="round"
-          ></path>
-        </svg>
-      </button>
-
-      <button
-        class="icon-button menu-toggle"
+        class="nav-icon-button menu-toggle"
         type="button"
         data-menu-toggle
         aria-expanded="false"
@@ -92,9 +52,9 @@ const isActive = (href: string) => (href === '/' ? pathname === '/' : pathname.s
       >
         <svg class="menu-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
           <path
-            d="M4 7.5h16M4 12h16M4 16.5h11"
+            d="M4 8h16M4 16h16"
             stroke="currentColor"
-            stroke-width="1.8"
+            stroke-width="1.4"
             stroke-linecap="round"
           ></path>
         </svg>
@@ -102,174 +62,117 @@ const isActive = (href: string) => (href === '/' ? pathname === '/' : pathname.s
           <path
             d="m6 6 12 12M18 6 6 18"
             stroke="currentColor"
-            stroke-width="1.8"
+            stroke-width="1.4"
             stroke-linecap="round"
           ></path>
         </svg>
       </button>
     </div>
   </div>
+</header>
 
-  <nav id="mobile-navigation" class="mobile-nav" aria-label="移动端导航" hidden>
-    {SITE.nav.map((item, index) => (
+<div id="mobile-navigation" class="mobile-menu" aria-label="移动端导航" hidden>
+  <nav class="mobile-menu__nav">
+    {SITE.nav.map((item) => (
       <a
-        class:list={['mobile-nav__link', { 'is-active': isActive(item.href) }]}
+        class:list={['mobile-menu__link', { 'is-active': isActive(item.href) }]}
         href={item.href}
         aria-current={isActive(item.href) ? 'page' : undefined}
       >
-        <span>{item.label}</span>
-        <span class="mobile-nav__index">0{index + 1}</span>
+        {item.label}
       </a>
     ))}
-    <div class="mobile-nav__footer">
-      <a href={SITE.github} target="_blank" rel="noreferrer">
-        GitHub ↗
-      </a>
-      <a href="/rss.xml">RSS ↗</a>
-    </div>
   </nav>
-</header>
+  <div class="mobile-menu__extra">
+    <a href={SITE.github} target="_blank" rel="noreferrer">
+      GitHub
+    </a>
+    <a href="/rss.xml">RSS</a>
+    <a href={SITE.repo} target="_blank" rel="noreferrer">
+      站点源码
+    </a>
+  </div>
+</div>
 
 <style>
-  .site-header {
+  .global-nav {
     position: sticky;
-    z-index: 50;
+    z-index: 100;
     top: 0;
-    padding-top: 14px;
-    pointer-events: none;
+    border-bottom: 1px solid var(--line-soft);
+    background: rgba(251, 251, 253, 0.8);
+    backdrop-filter: saturate(180%) blur(20px);
+    -webkit-backdrop-filter: saturate(180%) blur(20px);
   }
 
-  .header-shell {
+  .global-nav__inner {
     display: flex;
-    width: min(100% - (var(--page-gutter) * 2), var(--container));
-    height: 64px;
+    width: min(100% - 44px, 1024px);
+    height: 48px;
     align-items: center;
-    padding: 0 10px 0 20px;
-    border: 1px solid var(--line);
-    border-radius: 999px;
     margin-inline: auto;
-    background: var(--surface-glass);
-    box-shadow: var(--shadow-sm);
-    backdrop-filter: blur(18px);
-    pointer-events: auto;
-    transition:
-      background-color 200ms ease,
-      box-shadow 200ms ease,
-      border-color 200ms ease;
   }
 
-  .site-header.is-scrolled .header-shell {
-    border-color: var(--line-strong);
-    box-shadow: var(--shadow-md);
-  }
-
-  .brand {
-    display: inline-flex;
-    gap: 0.6rem;
-    align-items: center;
+  .nav-brand {
     color: var(--ink);
-    text-decoration: none;
-    flex: none;
+    font-family: var(--font-display);
+    font-size: 17px;
+    font-weight: 600;
+    letter-spacing: -0.025em;
+    line-height: 1;
   }
 
-  .brand-mark {
-    display: grid;
-    width: 27px;
-    height: 27px;
-    border-radius: 50%;
-    background: var(--accent);
-    color: #fff8ee;
-    place-items: center;
-    transition: transform 500ms var(--ease-out);
-  }
-
-  .brand:hover .brand-mark {
-    transform: rotate(45deg);
-  }
-
-  .brand-mark svg {
-    width: 19px;
-    height: 19px;
-  }
-
-  .brand-word {
-    font-size: 1.02rem;
-    font-weight: 800;
-    letter-spacing: -0.055em;
-  }
-
-  .brand-dot {
-    color: var(--accent);
-  }
-
-  .primary-nav {
+  .nav-links {
     display: flex;
-    gap: 0.1rem;
+    gap: 32px;
     align-items: center;
     margin-left: auto;
+    margin-right: 36px;
   }
 
   .nav-link {
-    position: relative;
-    padding: 0.5rem 0.78rem;
-    border-radius: 999px;
-    color: var(--ink-soft);
-    font-size: 0.82rem;
-    font-weight: 650;
-    text-decoration: none;
-    transition:
-      background-color 160ms ease,
-      color 160ms ease;
+    color: rgba(29, 29, 31, 0.78);
+    font-size: 12px;
+    font-weight: 400;
+    line-height: 1;
+    transition: color 160ms ease;
   }
 
   .nav-link:hover {
-    background: var(--surface-soft);
     color: var(--ink);
   }
 
   .nav-link.is-active {
-    background: var(--ink);
-    color: var(--bg);
+    color: var(--ink);
+    font-weight: 500;
   }
 
-  .header-actions {
+  .nav-actions {
     display: flex;
-    gap: 0.18rem;
+    gap: 18px;
     align-items: center;
-    margin-left: 0.7rem;
   }
 
-  .icon-button {
+  .nav-icon-button {
     display: grid;
-    width: 38px;
-    height: 38px;
+    width: 24px;
+    height: 24px;
     padding: 0;
-    border: 1px solid transparent;
-    border-radius: 50%;
+    border: 0;
     background: transparent;
-    color: var(--ink-soft);
+    color: rgba(29, 29, 31, 0.8);
     cursor: pointer;
     place-items: center;
-    transition:
-      background-color 160ms ease,
-      border-color 160ms ease,
-      color 160ms ease,
-      transform 160ms var(--ease-out);
+    transition: color 160ms ease;
   }
 
-  .icon-button:hover {
-    border-color: var(--line);
-    background: var(--surface-soft);
+  .nav-icon-button:hover {
     color: var(--ink);
   }
 
-  .icon-button:active {
-    transform: scale(0.94);
-  }
-
-  .icon-button svg {
-    width: 18px;
-    height: 18px;
+  .nav-icon-button svg {
+    width: 16px;
+    height: 16px;
   }
 
   .menu-toggle {
@@ -280,65 +183,70 @@ const isActive = (href: string) => (href === '/' ? pathname === '/' : pathname.s
     display: none;
   }
 
-  .mobile-nav {
-    width: min(100% - (var(--page-gutter) * 2), var(--container));
-    padding: 0.45rem 0.8rem 0.9rem;
-    border: 1px solid var(--line);
-    border-radius: 24px;
-    margin: 0.5rem auto 0;
-    background: var(--surface);
-    box-shadow: var(--shadow-lg);
-    pointer-events: auto;
-    animation: menu-in 220ms var(--ease-out) both;
+  .mobile-menu {
+    position: fixed;
+    z-index: 90;
+    inset: 48px 0 0;
+    padding: 24px;
+    background: rgba(255, 255, 255, 0.98);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    overflow-y: auto;
+    animation: menu-in 280ms var(--ease) both;
   }
 
-  .mobile-nav__link {
-    display: flex;
-    min-height: 50px;
-    align-items: center;
-    justify-content: space-between;
-    padding: 0.55rem 0.9rem;
-    border-radius: 14px;
+  .mobile-menu__nav {
+    display: grid;
+    width: min(100%, 640px);
+    margin-inline: auto;
+  }
+
+  .mobile-menu__link {
+    padding: 21px 0;
+    border-bottom: 1px solid var(--line);
     color: var(--ink);
-    font-size: 1rem;
-    font-weight: 650;
-    text-decoration: none;
+    font-family: var(--font-display);
+    font-size: 28px;
+    font-weight: 600;
+    letter-spacing: -0.03em;
+    line-height: 1.15;
   }
 
-  .mobile-nav__link:hover,
-  .mobile-nav__link.is-active {
-    background: var(--surface-soft);
+  .mobile-menu__link:hover,
+  .mobile-menu__link.is-active {
+    color: var(--blue);
   }
 
-  .mobile-nav__index {
-    color: var(--muted);
-    font-family: var(--font-mono);
-    font-size: 0.68rem;
-  }
-
-  .mobile-nav__footer {
+  .mobile-menu__extra {
     display: flex;
-    gap: 1.2rem;
-    padding: 0.9rem;
-    border-top: 1px solid var(--line);
-    margin-top: 0.45rem;
+    width: min(100%, 640px);
+    flex-wrap: wrap;
+    gap: 14px 24px;
+    margin: 36px auto 0;
   }
 
-  .mobile-nav__footer a {
-    color: var(--muted);
-    font-size: 0.78rem;
-    font-weight: 650;
-    text-decoration: none;
+  .mobile-menu__extra a {
+    color: var(--ink-secondary);
+    font-size: 14px;
+    line-height: 1.4;
   }
 
-  .mobile-nav__footer a:hover {
-    color: var(--accent);
+  .mobile-menu__extra a:hover {
+    color: var(--blue);
+  }
+
+  .global-nav.menu-open .menu-icon {
+    display: none;
+  }
+
+  .global-nav.menu-open .close-icon {
+    display: block;
   }
 
   @keyframes menu-in {
     from {
       opacity: 0;
-      transform: translateY(-8px);
+      transform: translateY(-6px);
     }
     to {
       opacity: 1;
@@ -346,130 +254,79 @@ const isActive = (href: string) => (href === '/' ? pathname === '/' : pathname.s
     }
   }
 
-  @media (max-width: 860px) {
-    .primary-nav {
+  @media (max-width: 833px) {
+    .global-nav__inner {
+      width: min(100% - 32px, 1024px);
+    }
+
+    .nav-links {
       display: none;
+    }
+
+    .nav-actions {
+      margin-left: auto;
     }
 
     .menu-toggle {
       display: grid;
     }
-
-    .site-header.menu-open .menu-icon {
-      display: none;
-    }
-
-    .site-header.menu-open .close-icon {
-      display: block;
-    }
   }
 
-  @media (max-width: 560px) {
-    .site-header {
-      padding-top: 10px;
+  @media (max-width: 480px) {
+    .mobile-menu {
+      padding: 20px 18px;
     }
 
-    .header-shell {
-      height: 58px;
-      padding-left: 15px;
-    }
-
-    .brand-mark {
-      width: 24px;
-      height: 24px;
-    }
-
-    .brand-mark svg {
-      width: 17px;
-      height: 17px;
-    }
-
-    .brand-word {
-      font-size: 0.96rem;
-    }
-
-    .header-actions {
-      margin-left: 0.25rem;
-    }
-
-    .icon-button {
-      width: 35px;
-      height: 35px;
-    }
-
-    .mobile-nav {
-      border-radius: 20px;
+    .mobile-menu__link {
+      padding: 19px 0;
+      font-size: 26px;
     }
   }
 </style>
 
 <script>
-  const root = document.documentElement;
   const header = document.querySelector<HTMLElement>('[data-site-header]');
   const menuButton = document.querySelector<HTMLButtonElement>('[data-menu-toggle]');
-  const mobileNav = document.querySelector<HTMLElement>('#mobile-navigation');
-
-  const syncThemeLabel = () => {
-    const isDark = root.dataset.theme === 'dark';
-    document.querySelectorAll<HTMLButtonElement>('[data-theme-toggle]').forEach((button) => {
-      button.setAttribute('aria-label', isDark ? '切换到浅色模式' : '切换到深色模式');
-    });
-  };
+  const mobileMenu = document.querySelector<HTMLElement>('#mobile-navigation');
 
   const closeMenu = () => {
-    if (!header || !menuButton || !mobileNav) return;
+    if (!header || !menuButton || !mobileMenu) return;
     header.classList.remove('menu-open');
-    mobileNav.hidden = true;
+    mobileMenu.hidden = true;
     menuButton.setAttribute('aria-expanded', 'false');
     menuButton.setAttribute('aria-label', '打开菜单');
+    document.body.classList.remove('is-locked');
   };
 
-  document.querySelectorAll<HTMLButtonElement>('[data-theme-toggle]').forEach((button) => {
-    button.addEventListener('click', () => {
-      const nextTheme = root.dataset.theme === 'dark' ? 'light' : 'dark';
-      root.dataset.theme = nextTheme;
-      try {
-        localStorage.setItem('theme', nextTheme);
-      } catch {
-        // Theme still works for this session when storage is unavailable.
-      }
-      syncThemeLabel();
-    });
-  });
-
-  syncThemeLabel();
+  const openMenu = () => {
+    if (!header || !menuButton || !mobileMenu) return;
+    header.classList.add('menu-open');
+    mobileMenu.hidden = false;
+    menuButton.setAttribute('aria-expanded', 'true');
+    menuButton.setAttribute('aria-label', '关闭菜单');
+    document.body.classList.add('is-locked');
+    mobileMenu.querySelector<HTMLAnchorElement>('a')?.focus({ preventScroll: true });
+  };
 
   menuButton?.addEventListener('click', () => {
-    if (!header || !mobileNav) return;
-    const isOpen = !mobileNav.hidden;
-    header.classList.toggle('menu-open', !isOpen);
-    mobileNav.hidden = isOpen;
-    menuButton.setAttribute('aria-expanded', String(!isOpen));
-    menuButton.setAttribute('aria-label', isOpen ? '打开菜单' : '关闭菜单');
+    if (!mobileMenu) return;
+    if (mobileMenu.hidden) openMenu();
+    else closeMenu();
   });
 
-  mobileNav?.querySelectorAll('a').forEach((link) => {
+  mobileMenu?.querySelectorAll('a').forEach((link) => {
     link.addEventListener('click', closeMenu);
+  });
+
+  document.querySelectorAll('[data-search-open]').forEach((button) => {
+    button.addEventListener('click', closeMenu);
   });
 
   document.addEventListener('keydown', (event) => {
     if (event.key === 'Escape') closeMenu();
   });
 
-  document.addEventListener('click', (event) => {
-    if (!header || !mobileNav || mobileNav.hidden) return;
-    if (event.target instanceof Node && header.contains(event.target)) return;
-    closeMenu();
-  });
-
   window.addEventListener('resize', () => {
-    if (window.innerWidth > 860) closeMenu();
+    if (window.innerWidth > 833) closeMenu();
   });
-
-  const setHeaderState = () => {
-    header?.classList.toggle('is-scrolled', window.scrollY > 20);
-  };
-
-  setHeaderState();
-  window.addEventListener('scroll', setHeaderState, { passive: true });
 </script>

@@ -4,143 +4,146 @@ import PageHeader from '../../components/PageHeader.astro';
 import { getTagSummaries } from '../../lib/content';
 
 const tags = await getTagSummaries();
-const maxCount = Math.max(1, ...tags.map((tag) => tag.count));
 ---
 
 <BaseLayout title="标签" description="按主题浏览文章和笔记。">
   <PageHeader
-    eyebrow="TOPIC INDEX"
-    title="从标签"
-    titleAccent="逛"
-    titleTail="进去。"
+    eyebrow="标签"
+    title="按主题浏览。"
     description="标签是从内容里自然长出来的。不必按顺序，挑一个此刻最好奇的方向。"
-    issue="03"
-    countLabel={`${tags.length} 个标签`}
+    meta={`${tags.length} 个标签`}
   />
 
-  <section class="container tags-page" aria-label="全部标签">
-    {tags.length > 0 ? (
-      <div class="tag-cloud">
-        {tags.map((tag) => (
-          <a
-            class:list={[
-              'tag-cloud__item',
-              { 'tag-cloud__item--large': tag.count >= maxCount && tag.count > 1 },
-            ]}
-            href={tag.href}
-          >
-            <span class="tag-cloud__hash" aria-hidden="true">
-              #
-            </span>
-            <span class="tag-cloud__name">{tag.name}</span>
-            <span class="tag-cloud__count">{String(tag.count).padStart(2, '0')}</span>
-            <span class="tag-cloud__arrow" aria-hidden="true">
-              ↗
-            </span>
-          </a>
-        ))}
-      </div>
-    ) : (
-      <p class="tags-empty">还没有给内容加上标签。</p>
-    )}
+  <section class="section tags-page" aria-label="全部标签">
+    <div class="container">
+      {tags.length > 0 ? (
+        <div class="tag-index">
+          {tags.map((tag) => (
+            <a class="tag-index__item" href={tag.href}>
+              <span class="tag-index__name">{tag.name}</span>
+              <span class="tag-index__count">{String(tag.count).padStart(2, '0')} 篇</span>
+              <span class="tag-index__arrow" aria-hidden="true">
+                ›
+              </span>
+            </a>
+          ))}
+        </div>
+      ) : (
+        <p class="tags-empty">还没有给内容加上标签。</p>
+      )}
 
-    <p class="tags-note">
-      想从时间顺序开始？去<a href="/posts/">文章列表</a>或<a href="/notes/">笔记花园</a>看看。
-    </p>
+      <p class="tags-note">
+        也可以从时间顺序开始：<a href="/posts/">文章列表</a> 或 <a href="/notes/">笔记</a>。
+      </p>
+    </div>
   </section>
 </BaseLayout>
 
 <style>
   .tags-page {
-    padding-bottom: clamp(3rem, 7vw, 6rem);
+    padding-block: 48px 96px;
   }
 
-  .tag-cloud {
+  .tag-index {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
     border-top: 1px solid var(--line);
-    border-left: 1px solid var(--line);
   }
 
-  .tag-cloud__item {
+  .tag-index__item {
     display: grid;
-    grid-template-columns: auto minmax(0, 1fr) auto auto;
-    gap: 0.7rem;
+    grid-template-columns: minmax(0, 1fr) auto auto;
+    gap: 16px;
     align-items: center;
-    padding: clamp(1rem, 2.4vw, 1.5rem);
-    border-right: 1px solid var(--line);
+    padding: 22px 20px 22px 0;
     border-bottom: 1px solid var(--line);
     color: var(--ink);
     text-decoration: none;
-    transition:
-      background-color 180ms ease,
-      color 180ms ease;
+    transition: background-color 160ms ease;
   }
 
-  .tag-cloud__item:hover {
-    background: var(--accent-wash);
+  .tag-index__item:nth-child(odd) {
+    padding-right: 40px;
+    border-right: 1px solid var(--line);
   }
 
-  .tag-cloud__hash {
-    color: var(--accent);
-    font-family: var(--font-display);
-    font-size: 1.1rem;
-    font-style: italic;
+  .tag-index__item:nth-child(even) {
+    padding-left: 40px;
   }
 
-  .tag-cloud__name {
-    font-size: clamp(1rem, 1.6vw, 1.35rem);
-    font-weight: 650;
-    letter-spacing: -0.03em;
+  .tag-index__item:hover {
+    background: var(--bg-secondary);
   }
 
-  .tag-cloud__item--large .tag-cloud__name {
-    font-family: var(--font-display);
-    font-size: clamp(1.45rem, 2.6vw, 2rem);
+  .tag-index__item:hover .tag-index__name,
+  .tag-index__item:hover .tag-index__arrow {
+    color: var(--blue);
+  }
+
+  .tag-index__name {
+    font-size: clamp(21px, 2vw, 24px);
     font-weight: 500;
-    letter-spacing: -0.04em;
+    letter-spacing: -0.025em;
+    line-height: 1.3;
+    transition: color 160ms ease;
   }
 
-  .tag-cloud__count {
-    color: var(--muted);
-    font-family: var(--font-mono);
-    font-size: 0.64rem;
+  .tag-index__count {
+    color: var(--ink-tertiary);
+    font-size: 12px;
+    white-space: nowrap;
   }
 
-  .tag-cloud__arrow {
-    color: var(--muted);
-    font-size: 0.85rem;
-    transition: transform 180ms var(--ease-out);
+  .tag-index__arrow {
+    color: var(--ink-tertiary);
+    font-size: 22px;
+    line-height: 1;
+    transition:
+      color 160ms ease,
+      transform 160ms ease;
   }
 
-  .tag-cloud__item:hover .tag-cloud__arrow {
-    color: var(--accent);
-    transform: translate(2px, -2px);
+  .tag-index__item:hover .tag-index__arrow {
+    transform: translateX(2px);
   }
 
   .tags-note {
-    margin-top: 1.6rem;
-    color: var(--muted);
-    font-size: 0.76rem;
+    margin-top: 28px;
+    color: var(--ink-secondary);
+    font-size: 14px;
+    line-height: 1.5;
   }
 
   .tags-note a {
-    color: var(--ink-soft);
-    text-decoration-color: var(--accent);
-    text-underline-offset: 0.18em;
+    color: var(--blue);
+  }
+
+  .tags-note a:hover {
+    text-decoration: underline;
+    text-underline-offset: 3px;
   }
 
   .tags-empty {
-    padding: 3rem;
-    border: 1px dashed var(--line-strong);
-    border-radius: var(--radius-md);
-    color: var(--muted);
-    text-align: center;
+    padding: 56px 0;
+    border-top: 1px solid var(--line);
+    color: var(--ink-secondary);
+    font-size: 17px;
   }
 
-  @media (max-width: 680px) {
-    .tag-cloud {
+  @media (max-width: 734px) {
+    .tags-page {
+      padding-block: 36px 64px;
+    }
+
+    .tag-index {
       grid-template-columns: 1fr;
+    }
+
+    .tag-index__item,
+    .tag-index__item:nth-child(odd),
+    .tag-index__item:nth-child(even) {
+      padding: 18px 4px;
+      border-right: 0;
     }
   }
 </style>

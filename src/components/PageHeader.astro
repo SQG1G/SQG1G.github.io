@@ -2,160 +2,84 @@
 interface Props {
   eyebrow: string;
   title: string;
-  titleAccent?: string;
-  titleTail?: string;
   description: string;
-  issue: string;
-  countLabel?: string;
+  meta?: string;
 }
 
-const { eyebrow, title, titleAccent, titleTail, description, issue, countLabel } = Astro.props;
+const { eyebrow, title, description, meta } = Astro.props;
 ---
 
-<section class="page-hero page-enter">
-  <div class="container page-hero__grid">
-    <div class="page-hero__copy">
-      <p class="eyebrow">{eyebrow}</p>
-      <h1>
-        {title}
-        {titleAccent && <em>{titleAccent}</em>}
-        {titleTail}
-      </h1>
-    </div>
-
-    <div class="page-hero__aside">
-      <span class="page-hero__issue" aria-hidden="true">
-        {issue}
-      </span>
-      <p class="page-hero__description">{description}</p>
-      {countLabel && (
-        <span class="page-hero__count">
-          <span class="page-hero__count-dot" aria-hidden="true"></span>
-          {countLabel}
-        </span>
-      )}
+<section class="page-header">
+  <div class="container page-header__inner">
+    <p class="eyebrow eyebrow--blue">{eyebrow}</p>
+    <h1>{title}</h1>
+    <div class="page-header__support">
+      <p class="page-header__description">{description}</p>
+      {meta && <p class="page-header__meta">{meta}</p>}
     </div>
   </div>
 </section>
 
 <style>
-  .page-hero {
-    padding-block: clamp(2.8rem, 7vw, 6.4rem) clamp(2.4rem, 5vw, 4.5rem);
+  .page-header {
+    padding-block: clamp(64px, 9vw, 104px) clamp(40px, 5vw, 56px);
+    border-bottom: 1px solid var(--line);
+    background: var(--bg);
   }
 
-  .page-hero__grid {
+  .page-header__inner {
     display: grid;
-    grid-template-columns: minmax(0, 1.2fr) minmax(260px, 0.48fr);
-    gap: clamp(2.5rem, 6vw, 6rem);
-    align-items: end;
+    gap: 20px;
   }
 
-  .page-hero__copy h1 {
-    max-width: 11ch;
-    margin-top: 1.15rem;
-    font-size: clamp(3.1rem, 7.4vw, 6.8rem);
-    font-weight: 760;
-    line-height: 0.98;
-    letter-spacing: -0.07em;
-  }
-
-  .page-hero__copy h1 em {
-    display: inline-block;
-    color: var(--accent);
-    font-family: var(--font-display);
-    font-style: italic;
-    font-weight: 500;
+  .page-header h1 {
+    max-width: 16ch;
+    font-size: clamp(42px, 6.4vw, 72px);
+    font-weight: 600;
+    line-height: 1.04;
     letter-spacing: -0.045em;
-    transform: translateY(0.03em) rotate(-1.5deg);
   }
 
-  .page-hero__aside {
-    display: grid;
-    gap: 1.2rem;
-    justify-items: start;
-    padding-bottom: 0.4rem;
+  .page-header__support {
+    display: flex;
+    gap: 24px 48px;
+    align-items: flex-end;
+    justify-content: space-between;
+    padding-top: 12px;
   }
 
-  .page-hero__issue {
-    color: var(--line-strong);
-    font-family: var(--font-display);
-    font-size: clamp(3rem, 6vw, 4.6rem);
-    font-style: italic;
-    font-weight: 400;
-    line-height: 0.8;
-    letter-spacing: -0.07em;
+  .page-header__description {
+    max-width: 58ch;
+    color: var(--ink-secondary);
+    font-size: clamp(17px, 1.6vw, 21px);
+    line-height: 1.5;
   }
 
-  .page-hero__description {
-    max-width: 42ch;
-    color: var(--ink-soft);
-    font-size: 0.96rem;
-    line-height: 1.8;
+  .page-header__meta {
+    flex: none;
+    color: var(--ink-tertiary);
+    font-size: 12px;
+    line-height: 1.6;
   }
 
-  .page-hero__count {
-    display: inline-flex;
-    gap: 0.45rem;
-    align-items: center;
-    padding: 0.4rem 0.75rem;
-    border: 1px solid var(--line);
-    border-radius: 999px;
-    background: color-mix(in srgb, var(--surface) 60%, transparent);
-    color: var(--muted);
-    font-size: 0.7rem;
-    font-weight: 650;
-  }
-
-  .page-hero__count-dot {
-    width: 0.42rem;
-    height: 0.42rem;
-    border-radius: 50%;
-    background: var(--moss);
-  }
-
-  @media (max-width: 860px) {
-    .page-hero__grid {
-      grid-template-columns: 1fr;
-      gap: 1.8rem;
+  @media (max-width: 734px) {
+    .page-header {
+      padding-block: 56px 36px;
     }
 
-    .page-hero__copy h1 {
-      max-width: 13ch;
-      font-size: clamp(3rem, 12vw, 5.2rem);
+    .page-header h1 {
+      font-size: clamp(38px, 11vw, 52px);
     }
 
-    .page-hero__aside {
-      grid-template-columns: auto minmax(0, 1fr);
-      gap: 0.6rem 1.2rem;
-      align-items: center;
+    .page-header__support {
+      align-items: flex-start;
+      flex-direction: column;
+      gap: 16px;
+      padding-top: 4px;
     }
 
-    .page-hero__issue {
-      grid-row: span 2;
-      font-size: 3.2rem;
-    }
-
-    .page-hero__description {
-      max-width: 48ch;
-    }
-  }
-
-  @media (max-width: 560px) {
-    .page-hero {
-      padding-top: 2.6rem;
-    }
-
-    .page-hero__copy h1 {
-      font-size: clamp(2.8rem, 14vw, 4.3rem);
-    }
-
-    .page-hero__aside {
-      grid-template-columns: 1fr;
-      gap: 0.85rem;
-    }
-
-    .page-hero__issue {
-      display: none;
+    .page-header__meta {
+      font-size: 12px;
     }
   }
 </style>

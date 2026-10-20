@@ -33,8 +33,9 @@ Astro 的 **Content Collections** 提供了另一条路：先用 Schema 定义�
 这个站点的文章和笔记共用一组基础字段，笔记额外多一个 `status`：
 
 ```ts
-import { defineCollection, z } from 'astro:content';
+import { defineCollection } from 'astro:content';
 import { glob } from 'astro/loaders';
+import { z } from 'astro/zod';
 
 const writingSchema = z.object({
   title: z.string().min(1).max(120),

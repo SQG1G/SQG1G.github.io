@@ -1,7 +1,5 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="SQG1G 太阳标记">
-  <rect width="64" height="64" rx="17" fill="#1E2922"/>
-  <g stroke="#E45F3D" stroke-width="4.2" stroke-linecap="round">
-    <path d="M32 10.5v5.2M32 48.3v5.2M10.5 32h5.2M48.3 32h5.2M16.8 16.8l3.7 3.7M43.5 43.5l3.7 3.7M47.2 16.8l-3.7 3.7M20.5 43.5l-3.7 3.7"/>
-  </g>
-  <circle cx="32" cy="32" r="9.5" fill="#F4BE6A"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="SQG1G">
+  <rect width="64" height="64" rx="14" fill="#000000"/>
+  <text x="32" y="45" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="40" font-weight="600" fill="#f5f5f7">S</text>
+  <circle cx="49" cy="15" r="3" fill="#2997ff"/>
 </svg>

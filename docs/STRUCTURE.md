@@ -16,18 +16,18 @@
 .
 ├─ src/
 │  ├─ components/
-│  │  ├─ Header.astro          # 悬浮导航、主题切换、移动菜单
-│  │  ├─ Footer.astro          # 页脚 CTA 与站点信息
-│  │  ├─ SearchDialog.astro    # ⌘K 搜索弹层（原生 <dialog>）
-│  │  ├─ PostCard.astro        # 文章卡片
-│  │  ├─ NoteCard.astro        # 笔记卡片
-│  │  └─ PageHeader.astro      # 列表页的大标题区域
+│  │  ├─ Header.astro          # Apple 风格导航、搜索入口、全屏移动菜单
+│  │  ├─ Footer.astro          # 极简页脚
+│  │  ├─ SearchDialog.astro    # ⌘K 全屏搜索层（原生 <dialog>）
+│  │  ├─ PostCard.astro        # 产品式文章卡片
+│  │  ├─ NoteCard.astro        # 笔记卡片（支持深色区块）
+│  │  └─ PageHeader.astro      # 列表页大标题
 │  ├─ content/
 │  │  ├─ posts/                # 文章 Markdown
 │  │  └─ notes/                # 笔记 Markdown
 │  ├─ layouts/
-│  │  ├─ BaseLayout.astro      # HTML 骨架、SEO、主题、Header/Footer
-│  │  └─ ArticleLayout.astro   # 文章/笔记详情：目录、进度、前后篇
+│  │  ├─ BaseLayout.astro      # HTML 骨架、SEO、Header/Footer
+│  │  └─ ArticleLayout.astro   # 文章/笔记详情：进度、目录、前后篇
 │  ├─ lib/
 │  │  └─ content.ts            # 内容查询、排序、slug、日期、阅读时间
 │  ├─ pages/
@@ -245,36 +245,42 @@ const { title, author } = Astro.props;
 </style>
 ```
 
-可直接使用 `var(--ink)`、`var(--surface)`、`var(--radius-md)` 等全局 token，保持视觉一致。
+可直接使用 `var(--ink)`、`var(--bg-secondary)`、`var(--radius)` 等全局 token，保持视觉一致。
 
 ## 8. 改设计
 
 ### 颜色和圆角
 
-`src/styles/global.css` 顶部是唯一的 token 入口：
+`src/styles/global.css` 顶部是唯一的 token 入口。整体遵循 Apple 式的克制配色：黑、白、灰，加一个蓝色强调色。
 
-| Token                                            | 作用               |
-| ------------------------------------------------ | ------------------ |
-| `--bg` / `--surface`                             | 页面背景与卡片表面 |
-| `--ink` / `--ink-soft` / `--muted`               | 三级文字颜色       |
-| `--accent` / `--accent-soft`                     | 珊瑚色强调与浅底色 |
-| `--moss` / `--sky` / `--gold`                    | 辅助色             |
-| `--line` / `--line-strong`                       | 边框               |
-| `--radius-sm` ~ `--radius-xl`                    | 圆角               |
-| `--shadow-sm` ~ `--shadow-lg`                    | 阴影               |
-| `--font-sans` / `--font-display` / `--font-mono` | 字体栈             |
+| Token                                            | 作用                     |
+| ------------------------------------------------ | ------------------------ |
+| `--bg` / `--bg-secondary`                        | 页面背景与交替区块背景   |
+| `--ink` / `--ink-secondary` / `--ink-tertiary`   | 三级文字颜色             |
+| `--blue` / `--blue-hover` / `--blue-on-dark`     | 链接、按钮与深色区块强调 |
+| `--dark` / `--dark-surface` / `--dark-text`      | 首页与笔记区块的深色层级 |
+| `--line` / `--line-soft`                         | 分割线与轻边框           |
+| `--radius` / `--radius-large`                    | 卡片圆角                 |
+| `--font-sans` / `--font-display` / `--font-mono` | 字体栈                   |
 
-深色主题在 `[data-theme='dark']` 中覆盖同名变量。改色时同时检查浅色和深色。
+这个站点没有深色模式切换：深色是页面设计的一部分（首页 Hero、笔记区块），整体保持固定的浅色界面，与 apple.com 的阅读方式一致。改色时优先保持高对比度和克制的用色，不要同时引入第二个强调色。
 
-### 字体
+## 字体
 
-字体在 `src/layouts/BaseLayout.astro` 顶部通过 `@fontsource-variable/*` 引入。换字体时：
+`src/layouts/BaseLayout.astro` 引入两个字体包：
 
-1. 安装对应 `@fontsource-variable/...` 包；
-2. 改 BaseLayout 的 import；
-3. 改 `global.css` 的 `--font-sans` / `--font-display`。
+```ts
+import '@fontsource-variable/inter';
+import '@fontsource-variable/noto-sans-sc';
+```
 
-中文回退字体在 token 里已经写进字体栈，换英文字体不会影响中文显示。
+字体栈在 `global.css` 中：
+
+- Apple 设备：优先使用系统 **SF Pro Text / SF Pro Display** 和中文 **PingFang SC**；
+- 其他平台：拉丁字符使用 **Inter Variable**，中文使用 **Noto Sans SC Variable**；
+- 如果字体加载失败，Windows 回退到 Microsoft YaHei；代码使用 SF Mono / Cascadia Code / Consolas。
+
+Apple 的 SF Pro 是系统字体，不应把字体文件复制进仓库或通过第三方 CDN 分发。换字体时改 `--font-sans` / `--font-display` 即可，中文回退字体已经写在字体栈里。
 
 ### 页面级样式
 

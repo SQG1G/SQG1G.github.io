@@ -17,12 +17,11 @@ export const SITE = {
     { label: '关于', href: '/about/' },
   ],
   hero: {
-    eyebrow: 'HELLO, 我是 SQG1G',
+    eyebrow: 'SQG1G 的个人博客',
     titleBefore: '把复杂的事，',
     titleEmphasis: '写清楚',
     titleAfter: '。',
-    intro:
-      '这里是我的数字花园：记录代码、系统设计与工具，也收藏那些让生活变轻的瞬间。慢慢写，认真想，偶尔跑题。',
+    intro: '记录代码、系统与工具，也收藏那些值得慢慢想清楚的事。',
   },
   now: {
     label: 'NOW',
