@@ -26,7 +26,7 @@
 │  │  ├─ posts/                # 文章 Markdown
 │  │  └─ notes/                # 笔记 Markdown
 │  ├─ layouts/
-│  │  ├─ BaseLayout.astro      # HTML 骨架、SEO、Header/Footer
+│  │  ├─ BaseLayout.astro      # HTML 骨架、SEO、View Transitions、Header/Footer
 │  │  └─ ArticleLayout.astro   # 文章/笔记详情：进度、目录、前后篇
 │  ├─ lib/
 │  │  └─ content.ts            # 内容查询、排序、slug、日期、阅读时间
@@ -261,6 +261,7 @@ const { title, author } = Astro.props;
 | `--dark` / `--dark-surface` / `--dark-text`      | 首页与笔记区块的深色层级 |
 | `--line` / `--line-soft`                         | 分割线与轻边框           |
 | `--radius` / `--radius-large`                    | 卡片圆角                 |
+| `--glass-bg` / `--glass-border` / `--glass-blur` | 毛玻璃面板与卡片         |
 | `--font-sans` / `--font-display` / `--font-mono` | 字体栈                   |
 
 这个站点没有深色模式切换：深色是页面设计的一部分（首页 Hero、笔记区块），整体保持固定的浅色界面，与 apple.com 的阅读方式一致。改色时优先保持高对比度和克制的用色，不要同时引入第二个强调色。
@@ -288,6 +289,27 @@ Apple 的 SF Pro 是系统字体，不应把字体文件复制进仓库或通过
 - 组件样式：对应组件的 `<style>`；
 - 正文排版：`global.css` 的 `.prose`；
 - 不要为了一个页面改全局 `.prose`，除非你确实想影响所有文章。
+
+### 动效与毛玻璃
+
+页面切换使用 Astro 的 **ClientRouter**，入口在 `BaseLayout.astro`：
+
+```astro
+import {ClientRouter} from 'astro:transitions'; ...
+<ClientRouter />
+```
+
+转场本身在 `global.css` 的 `::view-transition-old(root)` / `::view-transition-new(root)` 中定义：旧页面淡出并轻微放大、模糊，新页面从下方淡入。想调整转场时长或手感，改这两组 keyframes 即可；系统开启“减少动态效果”时，转场会自动被禁用。
+
+毛玻璃 token 同样在 `global.css`：
+
+- 顶栏、移动端菜单、全屏搜索层用 `--glass-*`；
+- 首页文章卡片用 `--post-card-*`，可通过 `.latest` 的局部变量覆盖；
+- 首页笔记卡片用 `--note-card-*`，在深色区块中覆写为半透明深玻璃。
+
+因为 ClientRouter 会替换页面 DOM，带交互的组件脚本需要监听 `astro:page-load` 并在每次初始化时清理旧监听器；本项目中的 Header、SearchDialog、ArticleLayout 都采用这个模式。新增带 JS 的组件时，照这个方式写即可。
+
+指向非 HTML 资源的链接（例如 RSS）要加 `data-astro-reload`，让浏览器执行一次正常跳转，而不是被客户端路由拦截。
 
 ## 9. SEO、RSS 和搜索
 

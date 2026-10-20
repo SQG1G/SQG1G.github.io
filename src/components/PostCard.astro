@@ -48,13 +48,25 @@ const visibleTags = entry.data.tags.slice(0, 3);
 <style>
   .post-card {
     height: 100%;
+    border: 1px solid var(--post-card-border, transparent);
     border-radius: var(--radius);
-    background: var(--bg-secondary);
-    transition: background-color 200ms var(--ease);
+    background: var(--post-card-bg, var(--bg-secondary));
+    box-shadow: var(--post-card-shadow, none);
+    transform: translateY(0);
+    transition:
+      background-color 220ms var(--ease),
+      border-color 220ms var(--ease),
+      box-shadow 260ms var(--ease),
+      transform 260ms var(--ease);
+    backdrop-filter: var(--post-card-blur, none);
+    -webkit-backdrop-filter: var(--post-card-blur, none);
   }
 
   .post-card:hover {
-    background: #ececf0;
+    border-color: var(--post-card-border-hover, var(--post-card-border, transparent));
+    background: var(--post-card-hover, #ececf0);
+    box-shadow: var(--post-card-shadow-hover, var(--post-card-shadow, none));
+    transform: translateY(-3px);
   }
 
   .post-card__link {
@@ -128,7 +140,7 @@ const visibleTags = entry.data.tags.slice(0, 3);
   }
 
   .post-card--featured {
-    background: var(--bg-secondary);
+    background: var(--post-card-bg, var(--bg-secondary));
   }
 
   .post-card--featured .post-card__link {

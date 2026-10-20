@@ -116,13 +116,32 @@ const [featuredPost, ...secondaryPosts] = latestPosts;
 
 <style>
   .hero {
+    position: relative;
     padding-block: clamp(104px, 14vw, 168px) clamp(94px, 12vw, 144px);
     background: var(--dark);
     color: var(--dark-text);
+    overflow: hidden;
     text-align: center;
   }
 
+  .hero::before {
+    position: absolute;
+    top: -28rem;
+    left: 50%;
+    width: 54rem;
+    height: 54rem;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(0, 113, 227, 0.19), transparent 66%);
+    content: '';
+    filter: blur(40px);
+    pointer-events: none;
+    transform: translateX(-50%);
+    animation: ambient-drift 16s ease-in-out infinite alternate;
+  }
+
   .hero__inner {
+    position: relative;
+    z-index: 1;
     display: flex;
     align-items: center;
     flex-direction: column;
@@ -178,14 +197,22 @@ const [featuredPost, ...secondaryPosts] = latestPosts;
 
   .hero__stats {
     display: flex;
+    width: fit-content;
     flex-wrap: wrap;
     gap: 10px;
     align-items: center;
     justify-content: center;
+    padding: 10px 17px;
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    border-radius: 999px;
     margin-top: 56px;
+    background: rgba(255, 255, 255, 0.06);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12);
     color: var(--ink-tertiary);
     font-size: 12px;
     line-height: 1.4;
+    backdrop-filter: blur(18px) saturate(150%);
+    -webkit-backdrop-filter: blur(18px) saturate(150%);
   }
 
   .hero__stats span[aria-hidden='true'] {
@@ -193,7 +220,46 @@ const [featuredPost, ...secondaryPosts] = latestPosts;
   }
 
   .latest {
-    background: var(--bg);
+    position: relative;
+    background: linear-gradient(180deg, #fff 0%, #f7f8fa 100%);
+    overflow: hidden;
+    --post-card-bg: rgba(255, 255, 255, 0.56);
+    --post-card-border: rgba(255, 255, 255, 0.76);
+    --post-card-blur: blur(24px) saturate(160%);
+    --post-card-shadow: 0 30px 70px -46px rgba(0, 0, 0, 0.35);
+    --post-card-hover: rgba(255, 255, 255, 0.76);
+  }
+
+  .latest::before,
+  .latest::after {
+    position: absolute;
+    border-radius: 50%;
+    content: '';
+    pointer-events: none;
+  }
+
+  .latest::before {
+    top: -22rem;
+    right: -13rem;
+    width: 48rem;
+    height: 48rem;
+    background: radial-gradient(circle, rgba(0, 113, 227, 0.14), transparent 66%);
+    filter: blur(36px);
+    animation: ambient-drift 20s ease-in-out infinite alternate;
+  }
+
+  .latest::after {
+    bottom: -26rem;
+    left: -18rem;
+    width: 44rem;
+    height: 44rem;
+    background: radial-gradient(circle, rgba(110, 110, 115, 0.1), transparent 68%);
+    filter: blur(42px);
+  }
+
+  .latest > .container {
+    position: relative;
+    z-index: 1;
   }
 
   .post-grid {
@@ -204,7 +270,33 @@ const [featuredPost, ...secondaryPosts] = latestPosts;
   }
 
   .notes-home {
+    position: relative;
     padding-block: clamp(80px, 10vw, 120px);
+    overflow: hidden;
+    --note-card-bg: rgba(255, 255, 255, 0.065);
+    --note-card-border: rgba(255, 255, 255, 0.12);
+    --note-card-blur: blur(22px) saturate(160%);
+    --note-card-shadow: 0 30px 70px -48px rgba(0, 0, 0, 0.8);
+    --note-card-hover: rgba(255, 255, 255, 0.1);
+  }
+
+  .notes-home::before {
+    position: absolute;
+    top: -18rem;
+    right: -12rem;
+    width: 42rem;
+    height: 42rem;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(0, 113, 227, 0.2), transparent 68%);
+    content: '';
+    filter: blur(32px);
+    pointer-events: none;
+    animation: ambient-drift 22s ease-in-out infinite alternate;
+  }
+
+  .notes-home > .container {
+    position: relative;
+    z-index: 1;
   }
 
   .notes-home .section-note {

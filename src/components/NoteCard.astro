@@ -43,13 +43,25 @@ const status = NOTE_STATUS[entry.data.status];
 <style>
   .note-card {
     height: 100%;
+    border: 1px solid var(--note-card-border, transparent);
     border-radius: var(--radius);
-    background: var(--bg-secondary);
-    transition: background-color 200ms var(--ease);
+    background: var(--note-card-bg, var(--bg-secondary));
+    box-shadow: var(--note-card-shadow, none);
+    transform: translateY(0);
+    transition:
+      background-color 220ms var(--ease),
+      border-color 220ms var(--ease),
+      box-shadow 260ms var(--ease),
+      transform 260ms var(--ease);
+    backdrop-filter: var(--note-card-blur, none);
+    -webkit-backdrop-filter: var(--note-card-blur, none);
   }
 
   .note-card:hover {
-    background: #ececf0;
+    border-color: var(--note-card-border-hover, var(--note-card-border, transparent));
+    background: var(--note-card-hover, #ececf0);
+    box-shadow: var(--note-card-shadow-hover, var(--note-card-shadow, none));
+    transform: translateY(-3px);
   }
 
   .note-card__link {
@@ -144,11 +156,17 @@ const status = NOTE_STATUS[entry.data.status];
   }
 
   .note-card--dark {
-    background: var(--dark-surface);
+    border-color: var(--note-card-border, transparent);
+    background: var(--note-card-bg, var(--dark-surface));
+    box-shadow: var(--note-card-shadow, none);
+    backdrop-filter: var(--note-card-blur, none);
+    -webkit-backdrop-filter: var(--note-card-blur, none);
   }
 
   .note-card--dark:hover {
-    background: var(--dark-surface-hover);
+    border-color: var(--note-card-border-hover, var(--note-card-border, transparent));
+    background: var(--note-card-hover, var(--dark-surface-hover));
+    box-shadow: var(--note-card-shadow-hover, var(--note-card-shadow, none));
   }
 
   .note-card--dark .note-card__link,

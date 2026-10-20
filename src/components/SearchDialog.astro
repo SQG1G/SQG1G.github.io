@@ -79,15 +79,15 @@
     border: 0;
     border-radius: 0;
     margin: 0;
-    background: rgba(255, 255, 255, 0.98);
+    background: transparent;
     color: var(--ink);
     overflow: hidden;
   }
 
   .search-dialog::backdrop {
-    background: rgba(0, 0, 0, 0.42);
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
+    background: rgba(0, 0, 0, 0.32);
+    backdrop-filter: blur(18px) saturate(130%);
+    -webkit-backdrop-filter: blur(18px) saturate(130%);
   }
 
   .search-dialog[open] {
@@ -97,12 +97,21 @@
   .search-panel {
     display: flex;
     width: min(100% - 44px, 980px);
-    height: 100%;
+    height: min(88vh, 880px);
     flex-direction: column;
-    padding: 56px 0 28px;
-    margin-inline: auto;
+    padding: 40px;
+    border: 1px solid var(--glass-border);
+    border-radius: 28px;
+    margin: 6vh auto;
+    background: var(--glass-bg);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.64),
+      0 40px 120px -30px rgba(0, 0, 0, 0.52);
+    backdrop-filter: var(--glass-blur);
+    -webkit-backdrop-filter: var(--glass-blur);
     overflow-y: auto;
     overscroll-behavior: contain;
+    animation: search-panel-in 420ms var(--ease) both;
   }
 
   .search-top {
@@ -370,10 +379,26 @@
     }
   }
 
+  @keyframes search-panel-in {
+    from {
+      opacity: 0;
+      filter: blur(8px);
+      transform: translateY(14px) scale(0.985);
+    }
+    to {
+      opacity: 1;
+      filter: blur(0);
+      transform: translateY(0) scale(1);
+    }
+  }
+
   @media (max-width: 734px) {
     .search-panel {
-      width: min(100% - 32px, 980px);
-      padding-top: 28px;
+      width: calc(100% - 24px);
+      height: calc(100% - 24px);
+      padding: 26px 18px 16px;
+      border-radius: 22px;
+      margin: 12px auto;
     }
 
     .search-heading h2 {
@@ -424,234 +449,286 @@
     url: string;
   }
 
-  const dialog = document.querySelector<HTMLDialogElement>('[data-search-dialog]')!;
-  const input = document.querySelector<HTMLInputElement>('[data-search-input]')!;
-  const resultsList = document.querySelector<HTMLUListElement>('[data-search-results]')!;
-  const status = document.querySelector<HTMLElement>('[data-search-status]')!;
-  const empty = document.querySelector<HTMLElement>('[data-search-empty]')!;
-  const closeButton = document.querySelector<HTMLButtonElement>('[data-search-close]');
+  const searchWindow = window as typeof window & { __sqg1gSearchReady?: boolean };
 
-  let searchIndex: SearchItem[] | null = null;
-  let indexPromise: Promise<SearchItem[]> | null = null;
-  let activeIndex = -1;
-  let currentResults: SearchItem[] = [];
-  let inputTimer: number | undefined;
+  if (!searchWindow.__sqg1gSearchReady) {
+    searchWindow.__sqg1gSearchReady = true;
+    let controller: AbortController | undefined;
 
-  const labelForType = (type: SearchItem['type']) => (type === 'post' ? '文章' : '笔记');
+    const initSearch = () => {
+      controller?.abort();
+      controller = new AbortController();
+      const { signal } = controller;
 
-  const loadIndex = () => {
-    if (indexPromise) return indexPromise;
+      const dialog = document.querySelector<HTMLDialogElement>('[data-search-dialog]');
+      const input = document.querySelector<HTMLInputElement>('[data-search-input]');
+      const resultsList = document.querySelector<HTMLUListElement>('[data-search-results]');
+      const status = document.querySelector<HTMLElement>('[data-search-status]');
+      const empty = document.querySelector<HTMLElement>('[data-search-empty]');
+      const closeButton = document.querySelector<HTMLButtonElement>('[data-search-close]');
 
-    status.textContent = '正在准备搜索索引…';
-    indexPromise = fetch('/search.json')
-      .then((response) => {
-        if (!response.ok) throw new Error(`HTTP ${response.status}`);
-        return response.json();
-      })
-      .then((data: SearchItem[]) => {
-        searchIndex = data;
-        status.textContent = '输入关键词开始搜索。';
-        return data;
-      })
-      .catch(() => {
-        indexPromise = null;
-        status.textContent = '搜索索引暂时不可用，请刷新后再试。';
-        throw new Error('Unable to load search index');
+      if (!dialog || !input || !resultsList || !status || !empty) return;
+
+      let searchIndex: SearchItem[] | null = null;
+      let indexPromise: Promise<SearchItem[]> | null = null;
+      let activeIndex = -1;
+      let currentResults: SearchItem[] = [];
+      let inputTimer: number | undefined;
+
+      const labelForType = (type: SearchItem['type']) => (type === 'post' ? '文章' : '笔记');
+
+      const loadIndex = () => {
+        if (indexPromise) return indexPromise;
+
+        status.textContent = '正在准备搜索索引…';
+        indexPromise = fetch('/search.json', { signal })
+          .then((response) => {
+            if (!response.ok) throw new Error(`HTTP ${response.status}`);
+            return response.json();
+          })
+          .then((data: SearchItem[]) => {
+            searchIndex = data;
+            status.textContent = '输入关键词开始搜索。';
+            return data;
+          })
+          .catch((error: unknown) => {
+            indexPromise = null;
+            if (error instanceof DOMException && error.name === 'AbortError') {
+              throw error;
+            }
+            status.textContent = '搜索索引暂时不可用，请刷新后再试。';
+            throw new Error('Unable to load search index');
+          });
+
+        return indexPromise;
+      };
+
+      const appendHighlighted = (element: HTMLElement, value: string, query: string) => {
+        const needle = query.trim().toLowerCase();
+        const index = needle ? value.toLowerCase().indexOf(needle) : -1;
+
+        if (!needle || index === -1) {
+          element.textContent = value;
+          return;
+        }
+
+        element.append(document.createTextNode(value.slice(0, index)));
+        const mark = document.createElement('mark');
+        mark.textContent = value.slice(index, index + needle.length);
+        element.append(mark, document.createTextNode(value.slice(index + needle.length)));
+      };
+
+      const setActive = (index: number) => {
+        const items = [...resultsList.querySelectorAll<HTMLElement>('.search-result')];
+        if (!items.length) return;
+
+        activeIndex = Math.max(0, Math.min(index, items.length - 1));
+        items.forEach((item, itemIndex) => {
+          item.classList.toggle('is-active', itemIndex === activeIndex);
+        });
+        items[activeIndex]?.scrollIntoView({ block: 'nearest' });
+      };
+
+      const renderResults = (query: string) => {
+        const trimmed = query.trim().toLowerCase();
+        resultsList.replaceChildren();
+        activeIndex = -1;
+
+        if (!trimmed) {
+          currentResults = [];
+          empty.hidden = true;
+          status.textContent = '输入关键词开始搜索。';
+          return;
+        }
+
+        const scored = (searchIndex ?? [])
+          .map((item) => {
+            const title = item.title.toLowerCase();
+            const description = item.description.toLowerCase();
+            const tags = item.tags.join(' ').toLowerCase();
+            const content = item.content.toLowerCase();
+            let score = 0;
+
+            if (title === trimmed) score += 100;
+            if (title.includes(trimmed)) score += 30;
+            if (tags.includes(trimmed)) score += 12;
+            if (description.includes(trimmed)) score += 8;
+            if (content.includes(trimmed)) score += 2;
+
+            return { item, score };
+          })
+          .filter((entry) => entry.score > 0)
+          .sort((a, b) => b.score - a.score)
+          .slice(0, 8)
+          .map((entry) => entry.item);
+
+        currentResults = scored;
+
+        if (!scored.length) {
+          empty.hidden = false;
+          status.textContent = `没有找到与「${query.trim()}」相关的内容。`;
+          return;
+        }
+
+        empty.hidden = true;
+        status.textContent = `找到 ${scored.length} 条相关内容。`;
+
+        scored.forEach((item) => {
+          const li = document.createElement('li');
+          const link = document.createElement('a');
+          link.className = 'search-result';
+          link.href = item.url;
+
+          const type = document.createElement('span');
+          type.className = 'search-result__type';
+          type.textContent = labelForType(item.type);
+
+          const body = document.createElement('div');
+          body.className = 'search-result__body';
+
+          const title = document.createElement('h3');
+          appendHighlighted(title, item.title, query);
+
+          const description = document.createElement('p');
+          appendHighlighted(description, item.description, query);
+
+          const meta = document.createElement('div');
+          meta.className = 'search-result__meta';
+          const date = document.createElement('span');
+          date.textContent = item.date;
+          meta.append(date);
+          if (item.tags.length) {
+            const tags = document.createElement('span');
+            tags.textContent = item.tags.slice(0, 3).join(' · ');
+            meta.append(tags);
+          }
+
+          const arrow = document.createElement('span');
+          arrow.className = 'search-result__arrow';
+          arrow.setAttribute('aria-hidden', 'true');
+          arrow.textContent = '›';
+
+          body.append(title, description, meta);
+          link.append(type, body, arrow);
+          li.append(link);
+          resultsList.append(li);
+        });
+
+        setActive(0);
+      };
+
+      const openSearch = () => {
+        if (!dialog.open) {
+          dialog.showModal();
+          document.body.classList.add('is-locked');
+        }
+
+        loadIndex()
+          .then(() => {
+            renderResults(input.value);
+            input.focus();
+            input.select();
+          })
+          .catch((error: unknown) => {
+            if (error instanceof DOMException && error.name === 'AbortError') return;
+            input.focus();
+          });
+      };
+
+      const closeSearch = () => {
+        if (dialog.open) dialog.close();
+      };
+
+      document.querySelectorAll<HTMLButtonElement>('[data-search-open]').forEach((button) => {
+        button.addEventListener('click', openSearch, { signal });
       });
 
-    return indexPromise;
-  };
+      closeButton?.addEventListener('click', closeSearch, { signal });
 
-  const appendHighlighted = (element: HTMLElement, value: string, query: string) => {
-    const needle = query.trim().toLowerCase();
-    const index = needle ? value.toLowerCase().indexOf(needle) : -1;
+      dialog.addEventListener(
+        'click',
+        (event) => {
+          if (event.target === dialog) closeSearch();
+        },
+        { signal },
+      );
 
-    if (!needle || index === -1) {
-      element.textContent = value;
-      return;
-    }
+      dialog.addEventListener(
+        'close',
+        () => {
+          document.body.classList.remove('is-locked');
+        },
+        { signal },
+      );
 
-    element.append(document.createTextNode(value.slice(0, index)));
-    const mark = document.createElement('mark');
-    mark.textContent = value.slice(index, index + needle.length);
-    element.append(mark, document.createTextNode(value.slice(index + needle.length)));
-  };
+      input.addEventListener(
+        'input',
+        () => {
+          window.clearTimeout(inputTimer);
+          inputTimer = window.setTimeout(() => {
+            if (searchIndex) renderResults(input.value);
+          }, 90);
+        },
+        { signal },
+      );
 
-  const setActive = (index: number) => {
-    const items = [...resultsList.querySelectorAll<HTMLElement>('.search-result')];
-    if (!items.length) return;
+      document.addEventListener(
+        'keydown',
+        (event) => {
+          const isTypingTarget =
+            event.target instanceof HTMLElement &&
+            (event.target.matches('input, textarea, select') || event.target.isContentEditable);
 
-    activeIndex = Math.max(0, Math.min(index, items.length - 1));
-    items.forEach((item, itemIndex) => {
-      item.classList.toggle('is-active', itemIndex === activeIndex);
-    });
-    items[activeIndex]?.scrollIntoView({ block: 'nearest' });
-  };
+          if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'k') {
+            event.preventDefault();
+            openSearch();
+            return;
+          }
 
-  const renderResults = (query: string) => {
-    const trimmed = query.trim().toLowerCase();
-    resultsList.replaceChildren();
-    activeIndex = -1;
+          if (!dialog.open) {
+            if (event.key === '/' && !isTypingTarget) {
+              event.preventDefault();
+              openSearch();
+            }
+            return;
+          }
 
-    if (!trimmed) {
-      currentResults = [];
-      empty.hidden = true;
-      status.textContent = '输入关键词开始搜索。';
-      return;
-    }
+          if (event.key === 'Escape') {
+            event.preventDefault();
+            closeSearch();
+            return;
+          }
 
-    const scored = (searchIndex ?? [])
-      .map((item) => {
-        const title = item.title.toLowerCase();
-        const description = item.description.toLowerCase();
-        const tags = item.tags.join(' ').toLowerCase();
-        const content = item.content.toLowerCase();
-        let score = 0;
+          if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+            event.preventDefault();
+            if (!currentResults.length) return;
+            setActive(activeIndex + (event.key === 'ArrowDown' ? 1 : -1));
+            return;
+          }
 
-        if (title === trimmed) score += 100;
-        if (title.includes(trimmed)) score += 30;
-        if (tags.includes(trimmed)) score += 12;
-        if (description.includes(trimmed)) score += 8;
-        if (content.includes(trimmed)) score += 2;
+          const activeResult = currentResults[activeIndex];
+          if (event.key === 'Enter' && activeResult) {
+            event.preventDefault();
+            const resultLinks = resultsList.querySelectorAll<HTMLAnchorElement>('.search-result');
+            resultLinks[activeIndex]?.click();
+          }
+        },
+        { signal },
+      );
 
-        return { item, score };
-      })
-      .filter((entry) => entry.score > 0)
-      .sort((a, b) => b.score - a.score)
-      .slice(0, 8)
-      .map((entry) => entry.item);
+      document.addEventListener(
+        'astro:before-swap',
+        () => {
+          closeSearch();
+          document.body.classList.remove('is-locked');
+        },
+        { signal },
+      );
 
-    currentResults = scored;
+      document.body.classList.remove('is-locked');
+    };
 
-    if (!scored.length) {
-      empty.hidden = false;
-      status.textContent = `没有找到与「${query.trim()}」相关的内容。`;
-      return;
-    }
-
-    empty.hidden = true;
-    status.textContent = `找到 ${scored.length} 条相关内容。`;
-
-    scored.forEach((item) => {
-      const li = document.createElement('li');
-      const link = document.createElement('a');
-      link.className = 'search-result';
-      link.href = item.url;
-
-      const type = document.createElement('span');
-      type.className = 'search-result__type';
-      type.textContent = labelForType(item.type);
-
-      const body = document.createElement('div');
-      body.className = 'search-result__body';
-
-      const title = document.createElement('h3');
-      appendHighlighted(title, item.title, query);
-
-      const description = document.createElement('p');
-      appendHighlighted(description, item.description, query);
-
-      const meta = document.createElement('div');
-      meta.className = 'search-result__meta';
-      const date = document.createElement('span');
-      date.textContent = item.date;
-      meta.append(date);
-      if (item.tags.length) {
-        const tags = document.createElement('span');
-        tags.textContent = item.tags.slice(0, 3).join(' · ');
-        meta.append(tags);
-      }
-
-      const arrow = document.createElement('span');
-      arrow.className = 'search-result__arrow';
-      arrow.setAttribute('aria-hidden', 'true');
-      arrow.textContent = '›';
-
-      body.append(title, description, meta);
-      link.append(type, body, arrow);
-      li.append(link);
-      resultsList.append(li);
-    });
-
-    setActive(0);
-  };
-
-  const openSearch = () => {
-    if (!dialog.open) {
-      dialog.showModal();
-      document.body.classList.add('is-locked');
-    }
-
-    loadIndex()
-      .then(() => {
-        renderResults(input.value);
-        input.focus();
-        input.select();
-      })
-      .catch(() => input.focus());
-  };
-
-  const closeSearch = () => {
-    if (dialog.open) dialog.close();
-  };
-
-  document.querySelectorAll<HTMLButtonElement>('[data-search-open]').forEach((button) => {
-    button.addEventListener('click', openSearch);
-  });
-
-  closeButton?.addEventListener('click', closeSearch);
-
-  dialog.addEventListener('click', (event) => {
-    if (event.target === dialog) closeSearch();
-  });
-
-  dialog.addEventListener('close', () => {
-    document.body.classList.remove('is-locked');
-  });
-
-  input.addEventListener('input', () => {
-    window.clearTimeout(inputTimer);
-    inputTimer = window.setTimeout(() => {
-      if (searchIndex) renderResults(input.value);
-    }, 90);
-  });
-
-  document.addEventListener('keydown', (event) => {
-    const isTypingTarget =
-      event.target instanceof HTMLElement &&
-      (event.target.matches('input, textarea, select') || event.target.isContentEditable);
-
-    if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'k') {
-      event.preventDefault();
-      openSearch();
-      return;
-    }
-
-    if (!dialog.open) {
-      if (event.key === '/' && !isTypingTarget) {
-        event.preventDefault();
-        openSearch();
-      }
-      return;
-    }
-
-    if (event.key === 'Escape') {
-      event.preventDefault();
-      closeSearch();
-      return;
-    }
-
-    if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
-      event.preventDefault();
-      if (!currentResults.length) return;
-      setActive(activeIndex + (event.key === 'ArrowDown' ? 1 : -1));
-      return;
-    }
-
-    const activeResult = currentResults[activeIndex];
-    if (event.key === 'Enter' && activeResult) {
-      event.preventDefault();
-      window.location.href = activeResult.url;
-    }
-  });
+    document.addEventListener('astro:page-load', initSearch);
+    initSearch();
+  }
 </script>

@@ -7,6 +7,7 @@ import Footer from '../components/Footer.astro';
 import Header from '../components/Header.astro';
 import SearchDialog from '../components/SearchDialog.astro';
 import { SITE } from '../config';
+import { ClientRouter } from 'astro:transitions';
 
 interface Props {
   title?: string;
@@ -56,6 +57,7 @@ const websiteSchema = {
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="color-scheme" content="light" />
+    <ClientRouter />
 
     <title>{pageTitle}</title>
     <meta name="description" content={description} />

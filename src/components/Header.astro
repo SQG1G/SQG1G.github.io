@@ -87,7 +87,9 @@ const isActive = (href: string) => (href === '/' ? pathname === '/' : pathname.s
     <a href={SITE.github} target="_blank" rel="noreferrer">
       GitHub
     </a>
-    <a href="/rss.xml">RSS</a>
+    <a href="/rss.xml" data-astro-reload>
+      RSS
+    </a>
     <a href={SITE.repo} target="_blank" rel="noreferrer">
       站点源码
     </a>
@@ -99,10 +101,11 @@ const isActive = (href: string) => (href === '/' ? pathname === '/' : pathname.s
     position: sticky;
     z-index: 100;
     top: 0;
-    border-bottom: 1px solid var(--line-soft);
-    background: rgba(251, 251, 253, 0.8);
-    backdrop-filter: saturate(180%) blur(20px);
-    -webkit-backdrop-filter: saturate(180%) blur(20px);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+    background: rgba(251, 251, 253, 0.64);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.58);
+    backdrop-filter: saturate(180%) blur(24px);
+    -webkit-backdrop-filter: saturate(180%) blur(24px);
   }
 
   .global-nav__inner {
@@ -163,11 +166,14 @@ const isActive = (href: string) => (href === '/' ? pathname === '/' : pathname.s
     color: rgba(29, 29, 31, 0.8);
     cursor: pointer;
     place-items: center;
-    transition: color 160ms ease;
+    transition:
+      color 160ms ease,
+      transform 200ms var(--ease);
   }
 
   .nav-icon-button:hover {
     color: var(--ink);
+    transform: scale(1.08);
   }
 
   .nav-icon-button svg {
@@ -188,9 +194,11 @@ const isActive = (href: string) => (href === '/' ? pathname === '/' : pathname.s
     z-index: 90;
     inset: 48px 0 0;
     padding: 24px;
-    background: rgba(255, 255, 255, 0.98);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
+    border-top: 1px solid rgba(255, 255, 255, 0.55);
+    background: rgba(255, 255, 255, 0.68);
+    box-shadow: 0 30px 80px -30px rgba(0, 0, 0, 0.28);
+    backdrop-filter: saturate(180%) blur(30px);
+    -webkit-backdrop-filter: saturate(180%) blur(30px);
     overflow-y: auto;
     animation: menu-in 280ms var(--ease) both;
   }
@@ -210,10 +218,14 @@ const isActive = (href: string) => (href === '/' ? pathname === '/' : pathname.s
     font-weight: 600;
     letter-spacing: -0.03em;
     line-height: 1.15;
+    transition:
+      color 180ms ease,
+      padding-left 220ms var(--ease);
   }
 
   .mobile-menu__link:hover,
   .mobile-menu__link.is-active {
+    padding-left: 6px;
     color: var(--blue);
   }
 
@@ -246,10 +258,12 @@ const isActive = (href: string) => (href === '/' ? pathname === '/' : pathname.s
   @keyframes menu-in {
     from {
       opacity: 0;
-      transform: translateY(-6px);
+      filter: blur(8px);
+      transform: translateY(-8px);
     }
     to {
       opacity: 1;
+      filter: blur(0);
       transform: translateY(0);
     }
   }
@@ -285,48 +299,77 @@ const isActive = (href: string) => (href === '/' ? pathname === '/' : pathname.s
 </style>
 
 <script>
-  const header = document.querySelector<HTMLElement>('[data-site-header]');
-  const menuButton = document.querySelector<HTMLButtonElement>('[data-menu-toggle]');
-  const mobileMenu = document.querySelector<HTMLElement>('#mobile-navigation');
+  const headerWindow = window as typeof window & { __sqg1gHeaderReady?: boolean };
 
-  const closeMenu = () => {
-    if (!header || !menuButton || !mobileMenu) return;
-    header.classList.remove('menu-open');
-    mobileMenu.hidden = true;
-    menuButton.setAttribute('aria-expanded', 'false');
-    menuButton.setAttribute('aria-label', '打开菜单');
-    document.body.classList.remove('is-locked');
-  };
+  if (!headerWindow.__sqg1gHeaderReady) {
+    headerWindow.__sqg1gHeaderReady = true;
+    let controller: AbortController | undefined;
 
-  const openMenu = () => {
-    if (!header || !menuButton || !mobileMenu) return;
-    header.classList.add('menu-open');
-    mobileMenu.hidden = false;
-    menuButton.setAttribute('aria-expanded', 'true');
-    menuButton.setAttribute('aria-label', '关闭菜单');
-    document.body.classList.add('is-locked');
-    mobileMenu.querySelector<HTMLAnchorElement>('a')?.focus({ preventScroll: true });
-  };
+    const initHeader = () => {
+      controller?.abort();
+      controller = new AbortController();
+      const { signal } = controller;
 
-  menuButton?.addEventListener('click', () => {
-    if (!mobileMenu) return;
-    if (mobileMenu.hidden) openMenu();
-    else closeMenu();
-  });
+      const header = document.querySelector<HTMLElement>('[data-site-header]');
+      const menuButton = document.querySelector<HTMLButtonElement>('[data-menu-toggle]');
+      const mobileMenu = document.querySelector<HTMLElement>('#mobile-navigation');
 
-  mobileMenu?.querySelectorAll('a').forEach((link) => {
-    link.addEventListener('click', closeMenu);
-  });
+      if (!header || !menuButton || !mobileMenu) return;
 
-  document.querySelectorAll('[data-search-open]').forEach((button) => {
-    button.addEventListener('click', closeMenu);
-  });
+      const closeMenu = () => {
+        header.classList.remove('menu-open');
+        mobileMenu.hidden = true;
+        menuButton.setAttribute('aria-expanded', 'false');
+        menuButton.setAttribute('aria-label', '打开菜单');
+        document.body.classList.remove('is-locked');
+      };
 
-  document.addEventListener('keydown', (event) => {
-    if (event.key === 'Escape') closeMenu();
-  });
+      const openMenu = () => {
+        header.classList.add('menu-open');
+        mobileMenu.hidden = false;
+        menuButton.setAttribute('aria-expanded', 'true');
+        menuButton.setAttribute('aria-label', '关闭菜单');
+        document.body.classList.add('is-locked');
+        mobileMenu.querySelector<HTMLAnchorElement>('a')?.focus({ preventScroll: true });
+      };
 
-  window.addEventListener('resize', () => {
-    if (window.innerWidth > 833) closeMenu();
-  });
+      menuButton.addEventListener(
+        'click',
+        () => {
+          if (mobileMenu.hidden) openMenu();
+          else closeMenu();
+        },
+        { signal },
+      );
+
+      mobileMenu.querySelectorAll('a').forEach((link) => {
+        link.addEventListener('click', closeMenu, { signal });
+      });
+
+      document.querySelectorAll('[data-search-open]').forEach((button) => {
+        button.addEventListener('click', closeMenu, { signal });
+      });
+
+      document.addEventListener(
+        'keydown',
+        (event) => {
+          if (event.key === 'Escape') closeMenu();
+        },
+        { signal },
+      );
+
+      window.addEventListener(
+        'resize',
+        () => {
+          if (window.innerWidth > 833) closeMenu();
+        },
+        { signal },
+      );
+
+      closeMenu();
+    };
+
+    document.addEventListener('astro:page-load', initHeader);
+    initHeader();
+  }
 </script>
